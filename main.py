@@ -1,7 +1,10 @@
 from tkinter import *
 from PIL import ImageTk, Image
-root = Tk()
+import threading
+import time
 
+root = Tk()
+stop_thread = False
 root.geometry('1366x768')
 root.title("Bookshop")
 
@@ -9,21 +12,55 @@ class Gui:
     def __init__(self):
         pass
 
+    def bgchange(self):
+        r,g,b=255,255,255
+        f=False
+        for i in range(75): #red
+            b -= 1
+            g -= 1
+            time.sleep(0.01)
+            root["bg"] = rgb_to_hex(r, g, b)
+
+        for i in range(75): #green
+            g+=1
+            r-=1
+            time.sleep(0.01)
+            root["bg"] = rgb_to_hex(r, g, b)
+
+        for i in range(75): #blue
+            b += 1
+            g -= 1
+            time.sleep(0.01)
+            root["bg"] = rgb_to_hex(r, g, b)
+
+        for i in range(75):
+            r+=1
+            g+=1
+            time.sleep(0.01)
+            root["bg"] = rgb_to_hex(r, g, b)
+
+        root["bg"] = rgb_to_hex(255, 255, 255)
+
     def start(self):
-        mainlogo1=Image.open('logo.jpg').resize((100, 100))
-        mainlogo=ImageTk.PhotoImage(mainlogo1)
+        self.mainlogo=Image.open('images\\logo.jpg').resize((200, 200))
+        self.mainlogo=ImageTk.PhotoImage(self.mainlogo)
 
 
-        self.mainicon = Frame(root, height=1366, width=768, bg="#f5f5dc")
-        self.mainicon.grid(row=0,column=0)
 
-        self.mainlogopic = Label(self.mainicon,image=mainlogo,bg="#f5f5dc")
-        self.mainlogopic.place(x=600,y=700, anchor=CENTER)
+        #self.mainicon = Frame(root, height=1366, width=768, bg="#f5f5dc")
+        #self.mainicon.grid(row=0,column=0)
 
-        self.mainicon.after(3000, self.load_screen)
+        self.mainlogopic = Label(root,image=self.mainlogo,bg="#f5f5dc")
+        self.mainlogopic.image = self.mainlogo
+        self.mainlogopic.place(relx=.5, rely=.5,anchor= CENTER)
+        t = threading.Thread(target=self.bgchange, daemon=True)
+        t.start()
+        self.mainlogopic.after(5000, self.load_screen)
         
     def load_screen(self):
-        self.mainicon.destroy()
+        global stop_thread
+        stop_thread = True
+        self.mainlogopic.destroy()
         self.menubar = Frame(root,height=60,width=10000,bg="#0F1111")
         self.menubar.grid(row=0,column=0)
 
@@ -40,15 +77,17 @@ class Gui:
             width=60,
             font=("Consolas",15),
         )
-        image=Image.open('mag.png').resize((30, 30))
-        my_img=ImageTk.PhotoImage(image)
+        self.search_logo = Image.open('images\\mag.jpg')
+        self.search_logo = ImageTk.PhotoImage(self.search_logo)
 
         
-        self.search_icon = Button(self.menubar, image=my_img, command = self.search)
-
+        self.search_icon = Button(self.menubar, image=self.search_logo, command = self.search)
+        self.search_icon.image = self.search_logo
         self.searchbox.place(x=250,y=13)
         self.title.place(x=10,y=10)
-        self.search_icon.place(x=990,y=11)
+        self.search_icon.place(x=930,y=11)
+
+
 
     def search(self,*h):
         print("you seached:",self.searchbox.get())
@@ -69,4 +108,3 @@ mygui.start()
 
 root.bind('<Return>', mygui.search)
 root.mainloop()
-print("hello")
