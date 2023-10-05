@@ -11,9 +11,23 @@ class DataClient:
             print("connected successfully")
         """
 
-    def fetch_titles(self):
-        #self.mycursor.execute("select Title from books")
-        #list1 = [item[0] for item in self.mycursor]
-        list1 = [name[:-4] for name in os.listdir("images\\covers")]
+    def fetch_titles(self,price=False):
+        """
+        self.mycursor.execute("select Title,Price from books")
+        list1 = [item for item in self.mycursor]
         random.shuffle(list1)
-        return list1
+        titles = [item[0] for item in list1]
+        price = [item[1] for item in list1]
+
+        if price:
+            return titles, price
+        return titles
+        """
+        list1 = [(name[:-4],random.randint(100,200)) for name in os.listdir("images\\covers")]
+        random.shuffle(list1)
+        titles = [item[0] for item in list1]
+        prices = [item[1] for item in list1]
+        if price:
+            return titles, prices
+        return titles
+        
