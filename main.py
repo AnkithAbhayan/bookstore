@@ -141,6 +141,21 @@ class Gui:
         self.menubar.grid(row=0,column=0,sticky="W",columnspan=2)
         self.menubar.grid_propagate(0)
 
+        self.pgno = 0
+        n1 = len(self.titles)
+        self.pagedist = []
+
+        while True:
+            if n1>=8:
+                self.pagedist.append(8)
+                n1 -= 8
+            else:
+                self.pagedist.append(n1)
+                break
+
+        print(self.pagedist)
+
+
         self.title = Label(
             self.menubar,
             text="BOOKSHOP",
@@ -203,7 +218,8 @@ class Gui:
         self.display_books()
     
     def callback(self, event):
-        x,y = event.x, event.y
+        x = self.canvas1.canvasx(event.x)
+        y = self.canvas1.canvasy(event.y)
         print(x,y)
         if x>=1105 and x<=1150 and y>=1105 and y<=1150:
             print("left button clicked.")
@@ -238,40 +254,37 @@ class Gui:
     def display_books(self,s=0,e=8):
         xnum = 100
         ynum = 100
-        total = e-s
-        print("displaying books.")
-        print(s,e)
         for i in range(s,e):
             self.bookbuttons[i].image = self.booklogos[i]
-            self.canvas1.create_window(xnum, ynum, anchor = "nw",window=self.bookbuttons[i],tags=('all'))
+            self.canvas1.create_window(xnum, ynum, anchor = "nw",window=self.bookbuttons[i],tags=("todel"))
             self.bookbuttons[i].lift()
-            self.canvas1.create_window(xnum,ynum+315, anchor="nw", window=self.booknamelabels[i],tags=('all'))
+            self.canvas1.create_window(xnum,ynum+315, anchor="nw", window=self.booknamelabels[i],tags=("todel"))
             self.booknamelabels[i].lift()
-            self.canvas1.create_window(xnum,ynum+340, anchor="nw", window=self.bookprices[i],tags=('all'))
+            self.canvas1.create_window(xnum,ynum+340, anchor="nw", window=self.bookprices[i],tags=("todel"))
             self.bookprices[i].lift()
-            if i==3:
+            if i==s+3:
                 xnum = 100
                 ynum += 500
             else: 
                 xnum += 300
-        self.i = i+1
-        if e==len(self.titles):
-            self.i = s
 
     def change_page(self, side):
-        self.canvas1.delete("all")        
         if side == "right":
-            s = self.i
-            if self.i>=(len(self.titles)-8):
-                e = len(self.titles)
+            if self.pgno == len(self.pagedist):
+                return
             else:
-                e = self.i+8        
+                self.canvas1.delete("todel")
+                s = sum(self.pagedist[0:self.pgno+1])
+                e = s+self.pagedist[self.pgno+1] 
+                self.pgno += 1     
         else:
-            e = self.i
-            if self.i==8:
-                s = 0
+            if self.pgno == 0:
+                return
             else:
-                s=self.i-8
+                self.canvas1.delete("todel")
+                e = sum(self.pagedist[0:self.pgno])
+                s = e-self.pagedist[self.pgno-1] 
+                self.pgno -=1
         self.display_books(s,e)
 
     def search(self,*h):
