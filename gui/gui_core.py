@@ -1,10 +1,29 @@
 from tkinter import *
-from math import floor
+
 from time import sleep
 
 class gui_core:
     def __init__(self,root):
         self.root = root
+        """x":[
+                    (16,24),(16,18),(18,16),(24,16),(50,42),
+                    (76,16),(82,16),(84,18),(84,24),(58,50),
+
+                    (84,76),(84,82),(82,84),(76,84),(50,58),
+
+                    
+                    (24,84),(18,84),(16,82),(16,76),(42,50)
+                ]"""
+        self.shapes = {
+            "arrow": [(15,35),(55,35),(55,15),(90,50),(55,85),(55,65),(15,65)],
+            "x":[
+                    (16,24),(24,16),(50,42),
+                    (76,16),(84,24),(58,50),
+
+                    (84,76),(76,84),(50,58),
+                    (24,84),(16,76),(42,50)
+                ]
+        }
 
     def change_focus(self,*h):
         h[0].widget.focus_set()
@@ -59,15 +78,15 @@ class gui_core:
 
         self.root["bg"] = self.rgb_to_hex(255, 255, 255)
 
-    def generate_arrow_coordinates(self,x,y,totx=100,toty=100,orient=None):
+    def generate_coordinates(self,x,y,totx=100,toty=100,orient=None,shape="arrow"):
         if orient=="right":
             sft = 0
         else:
             sft = totx
-        points = [(15,35),(55,35),(55,15),(90,50),(55,85),(55,65),(15,65)]
+        points = self.shapes[shape]
         npoints = []
         for coord in points:
-            npoints.extend([floor(x+abs(sft-(coord[0]/100)*totx)),floor(y+(coord[1]/100)*toty)])
+            npoints.extend([round(x+abs(sft-(coord[0]/100)*totx)),round(y+(coord[1]/100)*toty)])
 
         return npoints
 

@@ -22,7 +22,6 @@ class Gui:
         self.root.bind_all('<Leave>',self.mygui_core.on_leave)
 
         self.pixel = PhotoImage(width=1, height=1)
-        self.resultstext = ""
         self.mydata = mydata
 
         
@@ -162,13 +161,15 @@ class Gui:
         self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white")
 
         self.canvas1.create_polygon(
-            self.mygui_core.generate_arrow_coordinates(1105, 1105,40,40,"left"), 
+            self.mygui_core.generate_coordinates(1105, 1105,40,40,"left","arrow"), 
             fill="black"
         )
         self.canvas1.create_polygon(
-            self.mygui_core.generate_arrow_coordinates(1180, 1105,40,40,"right"), 
+            self.mygui_core.generate_coordinates(1180, 1105,40,40,"right","arrow"), 
             fill="black"
         )
+
+
 
         self.display_books()
     
@@ -182,6 +183,9 @@ class Gui:
         elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
             self.change_page("right")
             pass
+
+        elif x>=self.br[0]+25 and x<=self.br[0]+60 and y>=self.tl[1] and y<=self.tl[1]+37:
+            self.canvas1.delete("todel2")
 
 
     def change_page(self, side):
@@ -223,9 +227,8 @@ class Gui:
 
     def search(self,*h):
         inpt = self.searchbox.get().lower().strip()
+        self.canvas1.delete("todel2")
         if len(inpt) == 0:
-            if self.resultstext:
-                self.canvas1.delete(self.resultstext)
             return    
         self.searchbox.delete(0,'end')
         self.root.focus_set()
@@ -252,7 +255,26 @@ class Gui:
                         i+=1
                         if i>4:
                             break
-        if self.resultstext:
-            self.canvas1.delete(self.resultstext)
-        self.resultstext = self.canvas1.create_text(20,20, anchor="nw", text=f"results for '{inpt}':", font=("Consolas",15))
 
+        tl = (35,14)
+        br = (tl[0]+165+(len(inpt)*11),51)
+        """
+        self.canvas1.create_arc(20,15,50,50,start=90,extent=180,fill="white",width=0,style=CHORD,outline="white")
+        self.canvas1.create_polygon(36,14, 234,14, 234,51, 36,51,fill="white")
+        self.canvas1.create_arc(220,15,250,50,start=270,extent=180,fill="white",width=0,style=CHORD,outline="white")
+        """
+
+        self.larc = self.canvas1.create_arc(tl[0]-16,tl[1],br[1]-1,br[1]-1,start=90,extent=180,fill="white",width=0,style=CHORD,outline="white",tags="todel2")
+        self.rect = self.canvas1.create_polygon(tl[0],tl[1], br[0],tl[1], br[0],br[1], tl[0],br[1],fill="white",tags="todel2")
+        self.rarc = self.canvas1.create_arc(br[0]-14,tl[1]+1,br[0]+16,br[1]-1,start=270,extent=180,fill="white",width=0,style=CHORD,outline="white",tags="todel2")
+
+        self.resultstext = self.canvas1.create_text(tl[0],tl[1]+6, anchor="nw", text=f"results for: '{inpt}'", font=("Consolas",15),tags="todel2")
+        
+       
+        self.circlex = self.canvas1.create_oval(br[0]+25,tl[1],br[0]+62,br[1], fill="white",outline="white",tags="todel2")
+        self.xsymbol = self.canvas1.create_polygon(
+            self.mygui_core.generate_coordinates(br[0]+30, tl[1]+5,27,27,"right","x"),
+            fill="black",tags="todel2"
+        )
+        self.tl = tl
+        self.br = br
