@@ -23,7 +23,7 @@ class DataClient:
             return titles, price
         return titles
         """
-        list1 = [(name[:-4],random.randint(100,200)) for name in os.listdir("images\\covers")]
+        list1 = [(name[:-4],random.randint(100,200)) for name in os.listdir("images/covers")]
         random.shuffle(list1)
         titles = [item[0] for item in list1]
         prices = [item[1] for item in list1]
@@ -31,3 +31,11 @@ class DataClient:
             return titles, prices
         return titles
         
+    def fetch_prices(self,titles):
+        prices = [random.randint(100, 1000) for item in titles]
+        """
+        for item in titles:
+            self.mycursor.execute(f"select Price from books where Title={item}")
+            prices.append(self.mycursor[0])
+        return prices
+        """ 

@@ -12,7 +12,7 @@ class Gui:
         self.root = Tk()
         self.root.title("Bookshop")
         self.root.geometry("1366x768")
-        #self.root.attributes('-fullscreen', True)
+        self.root.attributes('-fullscreen', True)
         self.mygui_core = gui_core.gui_core(self.root)
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
@@ -215,6 +215,8 @@ class Gui:
                 e = sum(self.pagedist[0:self.pgno])
                 s = e-self.pagedist[self.pgno-1] 
                 self.pgno -=1
+        self.s = s
+        self.e = e
         
         scrlthread = threading.Thread(target=self.smoothscrolltotop,daemon=True)
         scrlthread.start()
@@ -226,10 +228,13 @@ class Gui:
             self.canvas1.yview_moveto(i/100)
             
     
-    def display_books(self,s=0,e=8):
+    def display_books(self,s=0,e=8,l=None):
+        if not l:
+            l = range(s,e)
         xnum = 100
         ynum = 100
-        for i in range(s,e):
+        
+        for i in l:
             self.bookbuttons[i].image = self.booklogos[i]
             self.canvas1.create_window(xnum, ynum, anchor = "nw",window=self.bookbuttons[i],tags=("todel"))
             self.bookbuttons[i].lift()
@@ -237,11 +242,13 @@ class Gui:
             self.booknamelabels[i].lift()
             self.canvas1.create_window(xnum,ynum+340, anchor="nw", window=self.bookprices[i],tags=("todel"))
             self.bookprices[i].lift()
-            if i==s+3:
-                xnum = 100
-                ynum += 500
-            else: 
-                xnum += 300
+            xnum += 300
+
+            if len(l)>4:
+                if i==s+3:
+                    xnum = 100
+                    ynum += 500
+
 
     def search(self,*h):
         inpt = self.searchbox.get().lower().strip()
@@ -250,32 +257,34 @@ class Gui:
             return    
         self.searchbox.delete(0,'end')
         self.root.focus_set()
-        titles = [item.lower() for item in self.mydata.fetch_titles()]
+        titles = self.mydata.fetch_titles()
         ratios = {}
         for i in range(len(titles)):
-            ratios.update({SequenceMatcher(None, inpt, titles[i]).ratio():titles[i]})
+            ratios.update({SequenceMatcher(None, inpt, titles[i].lower()).ratio():titles[i]})
         
+        list1 = []
         maxes = sorted(list(ratios.keys()))
-        if maxes[-1] > 0.45:
-            i = -1
-            while True:
-                if maxes[i] > 0.45:
-                    print(maxes[i],ratios[maxes[i]])
-                    i -= 1
-                else:
-                    break
+        
+        if maxes[-1] > 0.8:
+            list1.append(ratios[maxes[-1]])
         else:
-            if len(inpt) > 2:
-                i=1
-                for n in titles:
-                    if inpt in n.lower():
-                        print(n)
-                        i+=1
-                        if i>4:
-                            break
+            i=1
+            for n in titles:
+                if inpt.lower() in n.lower():
+                    list1.append(n)
+                    i+=1
+                if i>4:
+                    break
+        self.canvas1.delete("todel")
+        
+        indices = []
+        for item in list1:
+            indices.append(self.titles.index(item))
 
+        self.display_books(l=indices)
         tl = (35,14)
         br = (tl[0]+165+(len(inpt)*13),51)
+        self.canvas1.yview_moveto(0)
         """
         self.canvas1.create_arc(20,15,50,50,start=90,extent=180,fill="white",width=0,style=CHORD,outline="white")
         self.canvas1.create_polygon(36,14, 234,14, 234,51, 36,51,fill="white")
