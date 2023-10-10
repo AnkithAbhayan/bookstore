@@ -3,7 +3,7 @@ from PIL import ImageTk, Image
 from difflib import SequenceMatcher
 from math import floor
 import threading
-import time
+from time import sleep
 
 
 class Gui:
@@ -20,14 +20,12 @@ class Gui:
         self.root.bind_all('<Button>',self.mygui_core.change_focus)
         self.root.bind_all('<Enter>',self.mygui_core.on_enter)
         self.root.bind_all('<Leave>',self.mygui_core.on_leave)
+        self.br = ""
+        self.tl = ""
 
         self.pixel = PhotoImage(width=1, height=1)
-        self.mydata = mydata
-
-        
+        self.mydata = mydata        
         pass
-
-
 
 
     def load_images(self):
@@ -45,7 +43,8 @@ class Gui:
             self.bookbuttons.append(Button(self.root, image=self.booklogos[-1],borderwidth=0,bd=0))
             self.bookbuttons[-1].image = self.booklogos[-1]
 
-            self.booknamelabels.append(Label(
+            self.booknamelabels.append(
+                Label(
                     self.root, 
                     text=self.titles[i],
                     font=("Arial Italic Bold",11),
@@ -89,7 +88,7 @@ class Gui:
         global stop_thread
         stop_thread = True
         self.mainlogopic.destroy()
-        self.menubar = Frame(self.root,height=60,width=1285,bg="#0F1111",relief='flat')
+        self.menubar = Frame(self.root,height=60,width=self.root.winfo_screenwidth(),bg="#0F1111",relief='flat')
         self.menubar["highlightthickness"]=0
         self.menubar["borderwidth"]=0
         self.menubar.grid(row=0,column=0,sticky="W",columnspan=2)
@@ -107,7 +106,6 @@ class Gui:
                 self.pagedist.append(n1)
                 break
 
-        print(self.pagedist)
 
 
         self.title = Label(
@@ -139,7 +137,7 @@ class Gui:
         self.cart_icon.place(relx=0.78,rely=0.5,anchor=CENTER)
 
         # Create Canvas
-        self.canvas1 = Canvas(self.root, width = 1260,height = 708,relief='flat',highlightthickness=0,scrollregion=(0,0,700,1250))
+        self.canvas1 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = 708,relief='flat',highlightthickness=0,scrollregion=(0,0,700,1250))
         
         self.hbar=Scrollbar(self.root,orient=HORIZONTAL)
         self.hbar.grid(row=2,column=0)
@@ -151,26 +149,14 @@ class Gui:
         self.vbar.config(command=self.canvas1.yview)
         
         
-        self.canvas1.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
+        self.canvas1.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
         self.canvas1.bind("<Button-1>", self.callback)
 
         self.canvas1.grid(row=1,column=0,sticky="EW")
         # Display image
         self.canvas1.create_image( 0, 0, image = self.bg_image,anchor = "nw")
-        self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white")
-        self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white")
 
-        self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(1105, 1105,40,40,"left","arrow"), 
-            fill="black"
-        )
-        self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(1180, 1105,40,40,"right","arrow"), 
-            fill="black"
-        )
-
-
-
+        self.updatearrowmarks()
         self.display_books()
     
     def callback(self, event):
@@ -183,14 +169,38 @@ class Gui:
         elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
             self.change_page("right")
             pass
+        
+        elif self.br and self.tl:
+            if x>=self.br[0]+25 and x<=self.br[0]+60 and y>=self.tl[1] and y<=self.tl[1]+37:
+                self.canvas1.delete("todel2")
 
-        elif x>=self.br[0]+25 and x<=self.br[0]+60 and y>=self.tl[1] and y<=self.tl[1]+37:
-            self.canvas1.delete("todel2")
+    def updatearrowmarks(self):
+        self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3)
+        self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3)
+    
 
+        self.larrow = self.canvas1.create_polygon(
+            self.mygui_core.generate_coordinates(1105, 1105,40,40,"left","arrow"),
+            fill = "black"
+        )
+        self.rarrow = self.canvas1.create_polygon(
+            self.mygui_core.generate_coordinates(1180, 1105,40,40,"right","arrow"), 
+            fill = "black"
+        )
+
+        if self.pgno == 0:
+            self.canvas1.itemconfig(self.lcirc,fill="grey")
+            self.canvas1.itemconfig(self.lcirc,outline='grey')
+            self.canvas1.itemconfig(self.lcirc,activeoutline="grey")
+    
+        elif self.pgno == len(self.pagedist)-1:
+            self.canvas1.itemconfig(self.rcirc,fill="grey")
+            self.canvas1.itemconfig(self.rcirc,outline='grey')
+            self.canvas1.itemconfig(self.rcirc,activeoutline = "grey") 
 
     def change_page(self, side):
         if side == "right":
-            if self.pgno == len(self.pagedist):
+            if self.pgno == len(self.pagedist)-1:
                 return
             else:
                 self.canvas1.delete("todel")
@@ -205,8 +215,16 @@ class Gui:
                 e = sum(self.pagedist[0:self.pgno])
                 s = e-self.pagedist[self.pgno-1] 
                 self.pgno -=1
-        self.canvas1.yview_moveto(0.0)
+        
+        scrlthread = threading.Thread(target=self.smoothscrolltotop,daemon=True)
+        scrlthread.start()
         self.display_books(s,e)
+        self.updatearrowmarks()
+
+    def smoothscrolltotop(self):   
+        for i in range(100,0,-1):
+            self.canvas1.yview_moveto(i/100)
+            
     
     def display_books(self,s=0,e=8):
         xnum = 100
@@ -257,7 +275,7 @@ class Gui:
                             break
 
         tl = (35,14)
-        br = (tl[0]+165+(len(inpt)*11),51)
+        br = (tl[0]+165+(len(inpt)*13),51)
         """
         self.canvas1.create_arc(20,15,50,50,start=90,extent=180,fill="white",width=0,style=CHORD,outline="white")
         self.canvas1.create_polygon(36,14, 234,14, 234,51, 36,51,fill="white")
@@ -266,7 +284,7 @@ class Gui:
 
         self.larc = self.canvas1.create_arc(tl[0]-16,tl[1],br[1]-1,br[1]-1,start=90,extent=180,fill="white",width=0,style=CHORD,outline="white",tags="todel2")
         self.rect = self.canvas1.create_polygon(tl[0],tl[1], br[0],tl[1], br[0],br[1], tl[0],br[1],fill="white",tags="todel2")
-        self.rarc = self.canvas1.create_arc(br[0]-14,tl[1]+1,br[0]+16,br[1]-1,start=270,extent=180,fill="white",width=0,style=CHORD,outline="white",tags="todel2")
+        self.rarc = self.canvas1.create_arc(br[0]-16,tl[1]+1,br[0]+16,br[1]-1,start=270,extent=180,fill="white",width=0,style=CHORD,outline="white",tags="todel2")
 
         self.resultstext = self.canvas1.create_text(tl[0],tl[1]+6, anchor="nw", text=f"results for: '{inpt}'", font=("Consolas",15),tags="todel2")
         
