@@ -16,12 +16,14 @@ class Gui:
         self.mygui_core = gui_core.gui_core(self.root)
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
-        self.root.bind('<Return>', self.search)
+        self.root.bind('<Return>', self.deltextandsearch)
         self.root.bind_all('<Button>',self.mygui_core.change_focus)
         self.root.bind_all('<Enter>',self.mygui_core.on_enter)
         self.root.bind_all('<Leave>',self.mygui_core.on_leave)
         self.br = ""
         self.tl = ""
+        self.arrowstate = True
+        self.s,self.e=0,8
 
         self.pixel = PhotoImage(width=1, height=1)
         self.mydata = mydata        
@@ -124,7 +126,7 @@ class Gui:
             highlightcolor=self.mygui_core.rgb_to_hex(0, 0, 255),
             highlightbackground=self.mygui_core.rgb_to_hex(100, 100, 100)
         )
-
+        self.searchbox.bind('<KeyRelease>',self.search)
         self.search_icon = Button(self.menubar, image=self.search_logo, highlightthickness=2,command = self.search)
         self.search_icon.image = self.search_logo
 
@@ -157,35 +159,41 @@ class Gui:
         self.canvas1.create_image( 0, 0, image = self.bg_image,anchor = "nw")
 
         self.updatearrowmarks()
-        self.display_books()
+        self.l = list(range(0,8))
+        self.display_books(f=True)
+        
     
     def callback(self, event):
         x = self.canvas1.canvasx(event.x)
         y = self.canvas1.canvasy(event.y)
-
-        if x>=1105 and x<=1150 and y>=1105 and y<=1150:
-            self.change_page("left")
-            pass    
-        elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
-            self.change_page("right")
-            pass
+        if self.arrowstate == True:        
+            if x>=1105 and x<=1150 and y>=1105 and y<=1150:
+                self.change_page("left")
+                pass    
+            elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
+                self.change_page("right")
+                pass
         
-        elif self.br and self.tl:
+        if self.br and self.tl:
             if x>=self.br[0]+25 and x<=self.br[0]+60 and y>=self.tl[1] and y<=self.tl[1]+37:
                 self.canvas1.delete("todel2")
+                self.searchbox.delete(0,'end')
+                self.updatearrowmarks()
+                self.display_books(self.s,self.e)
 
     def updatearrowmarks(self):
-        self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3)
-        self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3)
+        self.arrowstate = True
+        self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
+        self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
     
 
         self.larrow = self.canvas1.create_polygon(
             self.mygui_core.generate_coordinates(1105, 1105,40,40,"left","arrow"),
-            fill = "black"
+            fill = "black",tags=("arrows")
         )
         self.rarrow = self.canvas1.create_polygon(
             self.mygui_core.generate_coordinates(1180, 1105,40,40,"right","arrow"), 
-            fill = "black"
+            fill = "black",tags=("arrows")
         )
 
         if self.pgno == 0:
@@ -228,9 +236,16 @@ class Gui:
             self.canvas1.yview_moveto(i/100)
             
     
-    def display_books(self,s=0,e=8,l=None):
-        if not l:
-            l = range(s,e)
+    def display_books(self,s=0,e=8,l=None,f=False):
+        if l==None:
+            l = list(range(s,e))
+
+        if l==self.l and f==False:
+            return
+        
+        self.canvas1.delete("todel")
+            
+        self.l = l
         xnum = 100
         ynum = 100
         
@@ -249,14 +264,19 @@ class Gui:
                     xnum = 100
                     ynum += 500
 
-
+    def deltextandsearch(self,*h):
+        self.searchbox.delete(0,'end')
+        self.root.focus_set()
+        
+        
     def search(self,*h):
         inpt = self.searchbox.get().lower().strip()
         self.canvas1.delete("todel2")
         if len(inpt) == 0:
+            self.updatearrowmarks()
+            self.display_books(self.s,self.e)
             return    
-        self.searchbox.delete(0,'end')
-        self.root.focus_set()
+            
         titles = self.mydata.fetch_titles()
         ratios = {}
         for i in range(len(titles)):
@@ -275,12 +295,13 @@ class Gui:
                     i+=1
                 if i>4:
                     break
-        self.canvas1.delete("todel")
         
         indices = []
         for item in list1:
             indices.append(self.titles.index(item))
 
+        self.canvas1.delete("arrows")
+        self.arrowstate = False
         self.display_books(l=indices)
         tl = (35,14)
         br = (tl[0]+165+(len(inpt)*13),51)
