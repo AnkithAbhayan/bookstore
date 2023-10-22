@@ -180,6 +180,7 @@ class Gui:
                 self.searchbox.delete(0,'end')
                 self.updatearrowmarks()
                 self.display_books(self.s,self.e)
+                self.vbar.grid(row=1, column=1,sticky="NSEW")
 
     def updatearrowmarks(self):
         self.arrowstate = True
@@ -326,3 +327,5 @@ class Gui:
         )
         self.tl = tl
         self.br = br
+
+        self.vbar.grid_forget()
