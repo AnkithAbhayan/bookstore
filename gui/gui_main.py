@@ -8,7 +8,6 @@ from time import sleep
 
 class Gui:
     def __init__(self,mydata,gui_core):
-        
         self.root = Tk()
         self.root.title("Bookshop")
         self.root.geometry("1366x768")
@@ -70,8 +69,6 @@ class Gui:
             )
         print("images loaded.")
 
-
-
     def start(self):
         self.mainlogo=ImageTk.PhotoImage(Image.open('images/icons/book 2.jpg').resize((200, 200)))
         t = threading.Thread(target=self.mygui_core.bgchange, daemon=True)
@@ -82,9 +79,6 @@ class Gui:
         self.mainlogopic.image = self.mainlogo
         self.mainlogopic.place(relx=.5, rely=.5,anchor= CENTER)
         self.mainlogopic.after(5000, self.load_screen)
-        
-
-
      
     def load_screen(self):
         global stop_thread
@@ -139,7 +133,7 @@ class Gui:
         self.cart_icon.place(relx=0.78,rely=0.5,anchor=CENTER)
 
         # Create Canvas
-        self.canvas1 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = 708,relief='flat',highlightthickness=0,scrollregion=(0,0,700,1250))
+        self.canvas1 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = 708,relief='flat',highlightthickness=0,scrollregion=(0,0,700,1450))
         
         self.hbar=Scrollbar(self.root,orient=HORIZONTAL)
         self.hbar.grid(row=2,column=0)
@@ -161,6 +155,7 @@ class Gui:
         self.updatearrowmarks()
         self.l = list(range(0,8))
         self.display_books(f=True)
+        self.menubar.lift()
         
     
     def callback(self, event):
@@ -168,10 +163,9 @@ class Gui:
         y = self.canvas1.canvasy(event.y)
         if self.arrowstate == True:        
             if x>=1105 and x<=1150 and y>=1105 and y<=1150:
-                self.change_page("left")                pass    
+                self.change_page("left")                    
             elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
                 self.change_page("right")
-                pass
         
         if self.br and self.tl:
             if x>=self.br[0]+25 and x<=self.br[0]+60 and y>=self.tl[1] and y<=self.tl[1]+37:
@@ -263,6 +257,7 @@ class Gui:
                 if i==s+3:
                     xnum = 100
                     ynum += 500
+        self.menubar.lift()
 
     def deltextandsearch(self,*h):
         self.searchbox.delete(0,'end')
