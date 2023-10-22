@@ -168,8 +168,7 @@ class Gui:
         y = self.canvas1.canvasy(event.y)
         if self.arrowstate == True:        
             if x>=1105 and x<=1150 and y>=1105 and y<=1150:
-                self.change_page("left")
-                pass    
+                self.change_page("left")                pass    
             elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
                 self.change_page("right")
                 pass
