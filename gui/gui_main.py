@@ -36,7 +36,13 @@ class Gui:
         self.bookx = round(self.scr_width*0.15)
         self.booky = round((16*self.bookx)/9)
 
-        pass
+    def callback2(self,event):
+        x = self.canvas2.canvasx(event.x)
+        y = self.canvas2.canvasy(event.y)
+        if x>=10 and x<=60 and y>=10 and y<=60:
+            self.canvas2.grid_forget()
+            self.canvas1.grid(row=1,column=0,sticky="EW")
+            self.vbar.config(command=self.canvas1.yview)
 
     def showbookdetails(self,book):
         self.canvas1.grid_forget()
@@ -47,15 +53,41 @@ class Gui:
         self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
 
         self.canvas2.grid(row=1,column=0,sticky="EW")
+        self.canvas2.bind("<Button-1>", self.callback2)
 
         points = [0,self.scr_height,self.scr_width,self.scr_height,self.scr_width,self.scr_height*1.34,0,self.scr_height*1.34]
         self.canvas2.create_polygon(points,fill="black",outline="grey")
+        self.bufferimg = ImageTk.PhotoImage(Image.open(f"images/covers/{book}.jpg").resize((round(self.scr_width//4.5),round((16*self.scr_width//4.5)/9)))) 
+        self.canvas2.create_image(0,0,image=self.bg_image2,anchor="nw")
+        self.canvas2.create_image( 125, 75, image = self.bufferimg,anchor = "nw")
+
+        self.canvas2.create_oval(10,10,60,60, fill="white",outline="grey",activeoutline="cyan",width=3,tags=("arrows"))        
+        self.canvas2.create_polygon(
+            self.mygui_core.generate_coordinates(15, 15,40,40,"left","arrow"),
+            fill = "black",tags=("arrows")
+        )
+
+        data = self.mydata.fetch_bookdetails(book)
+
+        n=50
+        if len(book)>25:
+            n=30
+
+        self.titlelbl = Label(self.root,text=data["title"],font=("Baskerville Old Face",n))
+        self.authorlbl = Label(self.root,text=f'- {data["author"]}',font=("Baskerville Old Face",25))
+
+        xl = round(self.scr_width//4.5)
+        self.canvas2.create_window(xl+200, 100, anchor = "nw",window=self.titlelbl)
+        self.canvas2.create_window(xl+210, 200, anchor = "nw",window=self.authorlbl)
+        self.menubar.lift()
+        #
 
 
     def load_images(self):
         self.search_logo = ImageTk.PhotoImage(Image.open('images/icons/mag.jpg').resize((30,30)))
         self.cart_logo = ImageTk.PhotoImage(Image.open('images/icons/cart.jpg').resize((30, 30)))
-        self.bg_image=ImageTk.PhotoImage(Image.open('images/icons/background 3.jpg').resize((1366, 1250)))
+        self.bg_image=ImageTk.PhotoImage(Image.open('images/icons/background 3.jpg').resize((self.scr_width, 1250)))
+        self.bg_image2 = ImageTk.PhotoImage(Image.open("images/icons/background 4.jpg").resize((self.scr_width,self.scr_height)))
         self.booklogos = []
         self.bookbuttons = []
         self.bookprices = []
@@ -129,7 +161,7 @@ class Gui:
 
         self.title = Label(
             self.menubar,
-            text="BOOKSHOP",
+            text="KITAB",
             font=("Arial Bold Italic",20),
             fg=self.mygui_core.rgb_to_hex(255,255,255),
             bg="#0F1111",
@@ -187,12 +219,15 @@ class Gui:
         
     
     def callback(self, event):
+        lc = [self.scr_width-200,1150,self.scr_width-150,1200]
+        rc = [self.scr_width-125,1150,self.scr_width-75,1200]
+
         x = self.canvas1.canvasx(event.x)
         y = self.canvas1.canvasy(event.y)
         if self.arrowstate == True:        
-            if x>=1105 and x<=1150 and y>=1105 and y<=1150:
+            if x>=self.scr_width-200 and x<=self.scr_width-150 and y>=1150 and y<=1200:
                 self.change_page("left")                    
-            elif x>=1175 and x<=1225 and y>=1105 and y<=1150:
+            elif x>=self.scr_width-125 and x<=self.scr_width-75 and y>=1150 and y<=1200:
                 self.change_page("right")
         
         if self.br and self.tl:
@@ -205,21 +240,21 @@ class Gui:
 
     def updatearrowmarks(self):
         self.arrowstate = True
+
+        lc = [self.scr_width-200,1150,self.scr_width-150,1200]
+        rc = [self.scr_width-125,1150,self.scr_width-75,1200]
         #self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
         #self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
-    
-        lc = [self.scr_width*0.8,self.scr_width*0.8,(self.scr_width*0.8)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
-        rc = [self.scr_width*0.9,self.scr_width*0.8,(self.scr_width*0.9)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
-
+        
         self.lcirc = self.canvas1.create_oval(lc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
         self.rcirc = self.canvas1.create_oval(rc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
-
+        
         self.larrow = self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(lc[0]+5, lc[0]+5,40,40,"left","arrow"),
+            self.mygui_core.generate_coordinates(lc[0]+5, 1155,40,40,"left","arrow"),
             fill = "black",tags=("arrows")
         )
         self.rarrow = self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(rc[0]+5, lc[0],40,40,"right","arrow"), 
+            self.mygui_core.generate_coordinates(rc[0]+5, 1155,40,40,"right","arrow"), 
             fill = "black",tags=("arrows")
         )
 
