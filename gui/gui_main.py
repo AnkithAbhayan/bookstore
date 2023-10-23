@@ -25,8 +25,31 @@ class Gui:
         self.s,self.e=0,8
 
         self.pixel = PhotoImage(width=1, height=1)
-        self.mydata = mydata        
+        self.mydata = mydata      
+
+        self.scr_width = self.root.winfo_screenwidth()
+        self.scr_height = self.root.winfo_screenheight()
+
+        #ratios
+        self.bgap = round(self.scr_width*0.066)
+        self.lrgap = round(self.scr_width*0.1)
+        self.bookx = round(self.scr_width*0.15)
+        self.booky = round((16*self.bookx)/9)
+
         pass
+
+    def showbookdetails(self,book):
+        self.canvas1.grid_forget()
+
+        self.canvas2 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height-60,relief='flat',highlightthickness=0,scrollregion=(0,0,700,self.scr_height*1.33))
+
+        self.vbar.config(command=self.canvas2.yview)
+        self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
+
+        self.canvas2.grid(row=1,column=0,sticky="EW")
+
+        points = [0,self.scr_height,self.scr_width,self.scr_height,self.scr_width,self.scr_height*1.34,0,self.scr_height*1.34]
+        self.canvas2.create_polygon(points,fill="black",outline="grey")
 
 
     def load_images(self):
@@ -40,8 +63,8 @@ class Gui:
 
         self.titles,self.prices = self.mydata.fetch_titles(price=True)
         for i in range(len(self.titles)):
-            self.booklogos.append(ImageTk.PhotoImage(Image.open(f'images/covers/{self.titles[i]}.jpg').resize((190, 300))))
-            self.bookbuttons.append(Button(self.root, image=self.booklogos[-1],borderwidth=0,bd=0))
+            self.booklogos.append(ImageTk.PhotoImage(Image.open(f'images/covers/{self.titles[i]}.jpg').resize((self.bookx, self.booky))))
+            self.bookbuttons.append(Button(self.root, image=self.booklogos[-1],borderwidth=0,bd=0,command=lambda i=i:self.showbookdetails(self.titles[i])))
             self.bookbuttons[-1].image = self.booklogos[-1]
 
             self.booknamelabels.append(
@@ -53,7 +76,7 @@ class Gui:
                     bg=self.mygui_core.rgb_to_hex(255, 255, 255),
                     image=self.pixel,
                     compound="center", 
-                    width=190
+                    width=self.bookx-5
                 )
             )
             self.bookprices.append(Label(
@@ -64,7 +87,7 @@ class Gui:
                     bg=self.mygui_core.rgb_to_hex(255, 255, 255),
                     image=self.pixel,
                     compound="center", 
-                    width=190
+                    width=self.bookx-5
                 )
             )
         print("images loaded.")
@@ -150,6 +173,11 @@ class Gui:
 
         self.canvas1.grid(row=1,column=0,sticky="EW")
         # Display image
+        x = self.root.winfo_screenwidth()-20
+        
+        points = [0,1250,x,1250,x,1460,0,1460]
+        self.canvas1.create_polygon(points,fill="black",outline="grey")
+        self.canvas1.create_text(20,1275, anchor="nw", text="Made by Ankith Abhayan and Rajath Valsan.",fill="grey",font=("Courier New",15))
         self.canvas1.create_image( 0, 0, image = self.bg_image,anchor = "nw")
 
         self.updatearrowmarks()
@@ -177,16 +205,21 @@ class Gui:
 
     def updatearrowmarks(self):
         self.arrowstate = True
-        self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
-        self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
+        #self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
+        #self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
     
+        lc = [self.scr_width*0.8,self.scr_width*0.8,(self.scr_width*0.8)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
+        rc = [self.scr_width*0.9,self.scr_width*0.8,(self.scr_width*0.9)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
+
+        self.lcirc = self.canvas1.create_oval(lc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
+        self.rcirc = self.canvas1.create_oval(rc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
 
         self.larrow = self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(1105, 1105,40,40,"left","arrow"),
+            self.mygui_core.generate_coordinates(lc[0]+5, lc[0]+5,40,40,"left","arrow"),
             fill = "black",tags=("arrows")
         )
         self.rarrow = self.canvas1.create_polygon(
-            self.mygui_core.generate_coordinates(1180, 1105,40,40,"right","arrow"), 
+            self.mygui_core.generate_coordinates(rc[0]+5, lc[0],40,40,"right","arrow"), 
             fill = "black",tags=("arrows")
         )
 
@@ -240,24 +273,25 @@ class Gui:
         self.canvas1.delete("todel")
             
         self.l = l
-        xnum = 100
-        ynum = 100
+        xnum = self.lrgap
+        ynum = round(self.lrgap*0.75)
         
         for i in l:
             self.bookbuttons[i].image = self.booklogos[i]
             self.canvas1.create_window(xnum, ynum, anchor = "nw",window=self.bookbuttons[i],tags=("todel"))
             self.bookbuttons[i].lift()
-            self.canvas1.create_window(xnum,ynum+315, anchor="nw", window=self.booknamelabels[i],tags=("todel"))
+            self.canvas1.create_window(xnum,(ynum+self.booky)+15, anchor="nw", window=self.booknamelabels[i],tags=("todel"))
             self.booknamelabels[i].lift()
-            self.canvas1.create_window(xnum,ynum+340, anchor="nw", window=self.bookprices[i],tags=("todel"))
+            self.canvas1.create_window(xnum,(ynum+self.booky)+40, anchor="nw", window=self.bookprices[i],tags=("todel"))
             self.bookprices[i].lift()
-            xnum += 300
+            xnum += self.bookx+self.bgap
 
             if len(l)>4:
                 if i==s+3:
-                    xnum = 100
-                    ynum += 500
+                    xnum = self.lrgap
+                    ynum += self.booky*1.5
         self.menubar.lift()
+        self.pgstatus = self.canvas1.create_text(self.scr_width-125,1275,text=f"showing page {self.pgno+1} of 3",fill="white", font=("Consolas",13),tags=("todel"))
 
     def deltextandsearch(self,*h):
         self.searchbox.delete(0,'end')
