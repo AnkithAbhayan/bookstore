@@ -74,11 +74,13 @@ class Gui:
             n=30
 
         self.titlelbl = Label(self.root,text=data["title"],font=("Baskerville Old Face",n))
-        self.authorlbl = Label(self.root,text=f'- {data["author"]}',font=("Baskerville Old Face",25))
+        self.authorlbl = Label(self.root,text=f'- {data["author"]}',font=("Liberation Serif",25))
+        self.pricelbl = Label(self.root,text=f"Rs.{data['price']}",font=("Baskerville Old Face",50))
 
         xl = round(self.scr_width//4.5)
         self.canvas2.create_window(xl+200, 100, anchor = "nw",window=self.titlelbl)
         self.canvas2.create_window(xl+210, 200, anchor = "nw",window=self.authorlbl)
+        self.canvas2.create_window(xl+200, 400, anchor="nw",window=self.pricelbl)
         self.menubar.lift()
         #
 
