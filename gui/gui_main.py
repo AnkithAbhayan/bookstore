@@ -246,16 +246,8 @@ class Gui:
         lc = [self.scr_width-200,1150,self.scr_width-150,1200]
         rc = [self.scr_width-125,1150,self.scr_width-75,1200]
         #self.lcirc = self.canvas1.create_oval(1100,1100,1150,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
-<<<<<<< Updated upstream
         #self.rcirc = self.canvas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
         
-=======
-        #self.rcirc = self.canvsas1.create_oval(1175,1100,1225,1150, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
-    
-        lc = [self.scr_width*0.8,self.scr_width*0.8,(self.scr_width*0.8)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
-        rc = [self.scr_width*0.9,self.scr_width*0.8,(self.scr_width*0.9)+self.scr_width*0.05,(self.scr_width*0.8)+self.scr_width*0.05]
-
->>>>>>> Stashed changes
         self.lcirc = self.canvas1.create_oval(lc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
         self.rcirc = self.canvas1.create_oval(rc, fill="white",outline="white",activeoutline="cyan",width=3,tags=("arrows"))
         
