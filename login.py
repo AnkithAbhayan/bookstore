@@ -11,6 +11,8 @@ class Authentication:
         self.window.bind("<Button-1>", self.callback)
         self.window.bind_all('<Enter>',self.on_enter)
         self.window.bind_all('<Leave>',self.on_leave)
+        self.usernameentry=None
+        self.passwordentry=None
         self.current = ""
 
     def doit(self):
@@ -27,7 +29,7 @@ class Authentication:
 
         self.switch_label = Label(self.window, text="dont have an account?",font=("Arial Italic Bold",10),fg="#342c5a",bg="#FFFFFF")
         self.mycanvas.create_window(x/1.943, y/1.87, anchor = "nw",window=self.switch_label,tags=("todel"))
-
+                
         self.mycanvas.pack()
         self.window.mainloop()
 
@@ -57,6 +59,38 @@ class Authentication:
                 self.mycanvas.create_image(0,0,image=self.imalogin,anchor="nw")
             else:
                 self.mycanvas.create_image(0,0,image=self.imasignup,anchor="nw")
+        else:
+            x = self.mycanvas.canvasx(event.x)
+            x = x*(1600/self.x)
+            y = self.mycanvas.canvasy(event.y)
+            y = y*(900/self.y)
+            
+            if x>=600 and x<=975 and y>=340 and y<=380:
+                if not self.usernameentry:
+                    self.usernameentry = Entry(self.window, width=24,font=("Consolas",17),highlightthickness=0,relief=FLAT,bg="#e7e7e7")
+                    self.mycanvas.create_window(515,293,anchor="nw",window=self.usernameentry)
+                    self.usernameentry.focus_set()
+                if self.passwordentry and self.passwordentry.get()=="":
+                    self.passwordentry.destroy()
+                    self.passwordentry = None
+
+            #515,363
+            elif x>=600 and x<=975 and y>=415 and y<=465:
+                if not self.passwordentry:
+                    self.passwordentry = Entry(self.window, width=24,font=("Consolas",17),highlightthickness=0,relief=FLAT,bg="#e7e7e7")
+                    self.mycanvas.create_window(515,359,anchor="nw",window=self.passwordentry)
+                    self.passwordentry.focus_set()
+                if self.usernameentry and self.usernameentry.get()=="":
+                    self.usernameentry.destroy()
+                    self.usernameentry = None                    
+
+            else:
+                if self.usernameentry and self.usernameentry.get()=="":                    
+                    self.usernameentry.destroy()
+                    self.usernameentry = None
+                if self.passwordentry and self.passwordentry.get()=="":
+                    self.passwordentry.destroy()
+                    self.passwordentry = None
 
     def on_enter(self,*h):
         self.current = str(h[0].widget)
