@@ -1,10 +1,10 @@
-#import mysql.connector as con
+import mysql.connector as con
 import os
 import random
 
 class DataClient:
     def __init__(self):
-        self.sql = False
+        self.sql = True
         if self.sql:
             self.mycon = con.connect(host='Localhost',user='root',password='HariOm@123',database='12C23')
             self.mycursor = self.mycon.cursor()
@@ -43,12 +43,13 @@ class DataClient:
     def fetch_bookdetails(self,title):
         if self.sql:
             data = {}
-            self.mycursor.execute(f"select Author,Genre,Pub_dt,Price from books where Title={title}")
-            data["title"] = self.mycursor[0][1]
-            data["author"] = self.mycursor[0][2]
-            data["genre"] = self.mycursor[0][3]
-            data["pub_dt"] = self.mycursor[0][4]
-            data["price"] = self.mycursor[0][5]
+            self.mycursor.execute(f"select Author,Genre,Pub_dt,Price from books where Title='{title}'")
+            for x in self.mycursor:
+                data["title"] = title
+                data["author"] = x[0]
+                data["genre"] = x[1]
+                data["pub_dt"] = x[2]
+                data["price"] = x[3]
             return data
         else:
             data = {
@@ -59,3 +60,21 @@ class DataClient:
                 "price":random.randint(100,1000)
             }
             return data
+
+    def create_account(self,uname,password):
+        if self.sql:
+            qry = f"insert into userdata values('{uname}','{password}')"
+            self.mycursor.execute(qry)
+            self.mycon.commit()
+ 
+    def delete_account(self,uname):
+        if self.sql:
+            qry = f"delete from userdata where username='{uname}'"
+            self.mycursor.execute(qry)
+            self.mycon.commit()
+
+    def alldetails(self):
+    if self.sql:
+            qry = f"select * f"
+data = DataClient()
+data.delete_account("Ankith")
