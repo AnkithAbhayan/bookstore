@@ -1,10 +1,10 @@
-import mysql.connector as con
+#import mysql.connector as con
 import os
 import random
 
 class DataClient:
     def __init__(self):
-        self.sql = True
+        self.sql = False
         if self.sql:
             self.mycon = con.connect(host='Localhost',user='root',password='HariOm@123',database='12C23')
             self.mycursor = self.mycon.cursor()
@@ -74,7 +74,7 @@ class DataClient:
             self.mycon.commit()
 
     def alldetails(self):
-    if self.sql:
+        if self.sql:
             qry = f"select * f"
 data = DataClient()
 data.delete_account("Ankith")

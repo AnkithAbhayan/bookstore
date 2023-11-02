@@ -72,22 +72,20 @@ class Authentication:
             y = y*(900/self.y)
             
             nchars = round((0.21*self.x)/self.m_len)
-            print(self.m_len)
-
             if x>=600 and x<=975 and y>=340 and y<=380:
                 if not self.usernameentry:
                     self.usernameentry = Entry(self.window, width=nchars,font=("Consolas",15),highlightthickness=0,relief=FLAT,bg="#e7e7e7",fg="#393747")
-                    self.mycanvas.create_window(530,295,anchor="nw",window=self.usernameentry)
+                    self.mycanvas.create_window(0.385*self.x,0.384*self.y,anchor="nw",window=self.usernameentry)
                     self.usernameentry.focus_set()
                 if self.passwordentry and self.passwordentry.get()=="":
-                    self.passwordentry.destroy()
+                    self.padentry.destroy()
                     self.passwordentry = None
 
             #515,363
             elif x>=600 and x<=975 and y>=415 and y<=465:
                 if not self.passwordentry:
                     self.passwordentry = Entry(self.window, width=nchars,font=("Consolas",15),highlightthickness=0,relief=FLAT,bg="#e7e7e7",fg="#393747",show="*")
-                    self.mycanvas.create_window(530,361,anchor="nw",window=self.passwordentry)
+                    self.mycanvas.create_window(0.385*self.x,0.47*self.y,anchor="nw",window=self.passwordentry)
                     self.passwordentry.focus_set()
                 if self.usernameentry and self.usernameentry.get()=="":
                     self.usernameentry.destroy()
