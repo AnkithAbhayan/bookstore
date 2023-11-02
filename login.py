@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter.font as tkfont
 from PIL import ImageTk,Image
 
 class Authentication:
@@ -14,6 +15,10 @@ class Authentication:
         self.usernameentry=None
         self.passwordentry=None
         self.current = ""
+        font = tkfont.Font(family="Consolas", size=15, weight="normal")
+        self.m_len = font.measure("0")
+
+
 
     def doit(self):
         x=self.window.winfo_screenwidth()
@@ -21,8 +26,9 @@ class Authentication:
         self.x = x
         self.y = y
 
-        self.imasignup = ImageTk.PhotoImage(Image.open("images/sign up.png").resize((x,y)))
-        self.imalogin = ImageTk.PhotoImage(Image.open("images/login.png").resize((x,y)))
+        
+        self.imalogin = ImageTk.PhotoImage(Image.open(r"images/login.png").resize((x,y)))
+        self.imasignup = ImageTk.PhotoImage(Image.open(r"images/sign up.png").resize((x,y)))
 
         self.mycanvas=Canvas(self.window,width=x,height=y,relief="flat",highlightthickness=0)
         self.mycanvas.create_image(0,0,image=self.imalogin,anchor="nw")
@@ -65,10 +71,13 @@ class Authentication:
             y = self.mycanvas.canvasy(event.y)
             y = y*(900/self.y)
             
+            nchars = round((0.21*self.x)/self.m_len)
+            print(self.m_len)
+
             if x>=600 and x<=975 and y>=340 and y<=380:
                 if not self.usernameentry:
-                    self.usernameentry = Entry(self.window, width=24,font=("Consolas",17),highlightthickness=0,relief=FLAT,bg="#e7e7e7")
-                    self.mycanvas.create_window(530,293,anchor="nw",window=self.usernameentry)
+                    self.usernameentry = Entry(self.window, width=nchars,font=("Consolas",15),highlightthickness=0,relief=FLAT,bg="#e7e7e7",fg="#393747")
+                    self.mycanvas.create_window(530,295,anchor="nw",window=self.usernameentry)
                     self.usernameentry.focus_set()
                 if self.passwordentry and self.passwordentry.get()=="":
                     self.passwordentry.destroy()
@@ -77,8 +86,8 @@ class Authentication:
             #515,363
             elif x>=600 and x<=975 and y>=415 and y<=465:
                 if not self.passwordentry:
-                    self.passwordentry = Entry(self.window, width=24,font=("Consolas",17),highlightthickness=0,relief=FLAT,bg="#e7e7e7")
-                    self.mycanvas.create_window(530,359,anchor="nw",window=self.passwordentry)
+                    self.passwordentry = Entry(self.window, width=nchars,font=("Consolas",15),highlightthickness=0,relief=FLAT,bg="#e7e7e7",fg="#393747",show="*")
+                    self.mycanvas.create_window(530,361,anchor="nw",window=self.passwordentry)
                     self.passwordentry.focus_set()
                 if self.usernameentry and self.usernameentry.get()=="":
                     self.usernameentry.destroy()
