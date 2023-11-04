@@ -35,10 +35,27 @@ class Authentication:
 
         self.switch_label = Label(self.window, text="dont have an account?",font=("Arial Italic Bold",10),fg="#342c5a",bg="#FFFFFF")
         self.mycanvas.create_window(x/1.943, y/1.87, anchor = "nw",window=self.switch_label,tags=("todel"))
-                
+        self.bout = self.mycanvas.create_rectangle(
+            (597/1600)*self.x,(555/900)*self.y, (984/1600)*self.x,(614/900)*self.y,
+            outline="blue",
+            fill=None,
+            width=0,
+            tags=("self.bout")
+        )
+        self.mycanvas.tag_bind(self.bout, "<Enter>", self.OnHover)
+        self.mycanvas.tag_bind(self.bout, "<Leave>", self.UnHover)
+            #x.bind('<Enter>', lambda x: self.OnHover(x))tagOrId
+            #x.bind('<Leave>', lambda x: self.UnHover(x))
+        #self.mycanvas.tag_bind("outline", '<Enter>', lambda event: self.OnHover(event.widget))
+        #self.mycanvas.tag_bind("outline", '<Leave>', lambda event: self.UnHover(event.widget))        
         self.mycanvas.pack()
         self.window.mainloop()
 
+    def OnHover(self,x):
+        self.mycanvas.itemconfig(self.bout, outline="blue",state="normal")
+    
+    def UnHover(self,x):
+        self.mycanvas.itemconfig(self.bout, state="hidden")
 
     def togglewindowstate(self):
         if self.window.attributes('-fullscreen'):
@@ -89,7 +106,11 @@ class Authentication:
                     self.passwordentry.focus_set()
                 if self.usernameentry and self.usernameentry.get()=="":
                     self.usernameentry.destroy()
-                    self.usernameentry = None                    
+                    self.usernameentry = None
+
+            elif x>=597 and x<=984 and y>=555 and y<=614:
+                pass
+                #self.window.destroy()                    
 
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
