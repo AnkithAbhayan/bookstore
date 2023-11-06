@@ -43,13 +43,14 @@ class DataClient:
     def fetch_bookdetails(self,title):
         if self.sql:
             data = {}
-            self.mycursor.execute(f"select Author,Genre,Pub_dt,Price from books where Title='{title}'")
+            self.mycursor.execute(f"select Author,Genre,Pub_dt,Price,description from books where Title='{title}'")
             for x in self.mycursor:
                 data["title"] = title
                 data["author"] = x[0]
                 data["genre"] = x[1]
                 data["pub_dt"] = x[2]
                 data["price"] = x[3]
+                data["description"] = x[4]
             return data
         else:
             data = {
@@ -73,8 +74,36 @@ class DataClient:
             self.mycursor.execute(qry)
             self.mycon.commit()
 
-    def alldetails(self):
+    def userexists(self,username, password=None):
         if self.sql:
-            qry = f"select * f"
+            qry = f"select * from userdata"
+            self.mycursor.execute(qry)
+            vals = [item for item in self.mycursor]
+        else:
+            vals = [("Ankith Abhayan","wakapie1234#"),("Karun","helloworld##")]
+        if not password:
+            for item in vals:
+                if item[0] == username:
+                    return True
+            return False
+        
+        for item in vals:
+            if item[0] == username and item[1]==password:
+                return True
+        return False
+
+    def add_purchase(self,ID,Username,BookNo,Qty,DateTime):
+        if self.sql:   
+            qry = f"insert into purchases values({ID},'{Username}',{BookNo},{Qty},'{DateTime}')"
+            self.mycursor.execute(qry)
+            self.mycon.commit()
+
+    def fetch_purchases(self):
+        if self.sql:
+            qry = "select * from purchases"
+            self.mycursor.execute(qry)
+            for x in self.mycursor:
+                print(x)       
+
+            
 data = DataClient()
-data.delete_account("Ankith")

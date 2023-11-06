@@ -80,9 +80,9 @@ class Gui:
         if len(book)>25:
             n=30
 
-        self.titlelbl = Label(self.root,text=data["title"],font=("Baskerville Old Face",n))
+        self.titlelbl = Label(self.root,text=data["title"],font=("Liberation Serif",n))
         self.authorlbl = Label(self.root,text=f'- {data["author"]}',font=("Liberation Serif",25))
-        self.pricelbl = Label(self.root,text=f"Rs.{data['price']}",font=("Baskerville Old Face",50))
+        self.pricelbl = Label(self.root,text=f"Rs.{data['price']}",font=("Liberation Serif",50))
 
         xl = round(self.scr_width//4.5)
         self.canvas2.create_window(xl+200, 100, anchor = "nw",window=self.titlelbl)
@@ -139,12 +139,11 @@ class Gui:
         t.start()
         
         #loading data
-        self.mycanvas.destroy()
         self.mainlogopic = Label(self.root,image=self.mainlogo,bg="#f5f5dc")
         self.mainlogopic.image = self.mainlogo
         self.mainlogopic.place(relx=.5, rely=.5,anchor= CENTER)
         self.mainlogopic.after(5000, self.load_screen)
-        
+        self.mycanvas.destroy()
         
      
     def load_screen(self):
@@ -351,6 +350,7 @@ class Gui:
         if len(inpt) == 0:
             self.updatearrowmarks()
             self.display_books(self.s,self.e)
+            self.vbar.grid(row=1, column=1,sticky="NSEW")
             return    
             
         titles = self.mydata.fetch_titles()

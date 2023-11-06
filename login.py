@@ -3,9 +3,11 @@ import tkinter.font as tkfont
 from PIL import ImageTk,Image
 from core import data
 from gui import gui_main,gui_core
+import threading
 
 class Authentication:
-    def __init__(self):
+    def __init__(self,mydata):
+        self.mydata = mydata
         self.window=Tk()
         self.window.title("LOGIN")
         self.window.attributes("-fullscreen",True)
@@ -17,6 +19,7 @@ class Authentication:
         self.usernameentry=None
         self.passwordentry=None
         self.current = ""
+        self.passout,self.userout = "",""
         font = tkfont.Font(family="Consolas", size=15, weight="normal")
         self.m_len = font.measure("0")
 
@@ -118,11 +121,32 @@ class Authentication:
 
             elif x>=597 and x<=984 and y>=555 and y<=614:
                 self.mycanvas.itemconfig(self.bout,outline="white",width=4)
-                self.window.after(100,self.shift)
-                #self.mycanvas.itemconfig(self.bout,outline="#5442f5")  
-                #self.window.destroy()
-           
+                mode = "login"
+                if self.switch_label['text'][0] == "a":
+                    mode = "sign up"
 
+                uname,pass1 = self.fetch_entry()
+                if uname=="" and pass1=="":
+                    self.show_error("Username and password fields empty",user=True,pass1=True)
+                    return
+
+                elif uname=="":
+                    self.show_error("Username field empty",user=True)
+                    return
+                elif pass1=="":
+                    self.show_error("Password field empty",pass1=True)
+                    return
+
+                if mode == "login":
+                    if self.mydata.userexists(uname,pass1):
+                        self.show_error("Correct! Loading...",True)
+                        self.window.after(100,self.shift)
+                    else:
+                        self.show_error("Incorrect username or password",user=True,pass1=True)
+
+                self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
+                
+                
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
                     self.usernameentry.destroy()
@@ -137,8 +161,8 @@ class Authentication:
     def shift(self):
         self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2)
         stop_thread = False
-        mydata = data.DataClient()
-        mygui = gui_main.Gui(mydata,gui_core,self.window,self.mycanvas)
+        
+        mygui = gui_main.Gui(self.mydata,gui_core,self.window,self.mycanvas)
         mygui.load_images()
         mygui.start()    
         mygui.root.mainloop() 
@@ -146,3 +170,42 @@ class Authentication:
     def on_leave(self,*h):
         self.current = ""
 
+    def fetch_entry(self):
+        uname,pass1 = "", ""
+        if self.usernameentry:
+            uname = self.usernameentry.get()
+        if self.passwordentry:
+            pass1 = self.passwordentry.get()
+        return uname, pass1
+
+
+    def show_error(self,msg,t=False,user=False,pass1=False):
+        color = "red"
+        if t==True:
+            color = "green"
+        gap = (35-len(msg))//2
+        msg = (" "*gap)+msg+(" "*gap)
+        self.errorinfo = Label(self.window, width=35,font=("Consolas",12),highlightthickness=0,relief=FLAT,bg="white",fg=color,text=msg)
+        self.mycanvas.create_window(0.375*self.x,0.7*self.y,anchor="nw",window=self.errorinfo)
+        if user:
+            self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
+        if pass1:
+            self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
+        
+        scrlthread = threading.Thread(target=self.deleteerrormsgs,daemon=True)
+        self.window.after(2000, scrlthread.start)
+
+    def deleteerrormsgs(self):
+        for i in range(1,256):
+            color = '#{:02x}{:02x}{:02x}'.format(255, i, i)
+            if self.passout:
+                self.mycanvas.itemconfig(self.passout,outline=color)
+            if self.userout:
+                self.mycanvas.itemconfig(self.userout,outline=color)
+            self.mycanvas.itemconfig(self.bout,outline=color)
+
+        self.errorinfo.destroy()
+        if self.userout:
+            self.mycanvas.delete(self.userout)
+        if self.passout:
+            self.mycanvas.delete(self.passout)
