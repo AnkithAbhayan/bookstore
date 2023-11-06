@@ -19,6 +19,7 @@ class Authentication:
         self.usernameentry=None
         self.passwordentry=None
         self.current = ""
+        self.buttonbusy = False
         self.passout,self.userout = "",""
         font = tkfont.Font(family="Consolas", size=15, weight="normal")
         self.m_len = font.measure("0")
@@ -91,9 +92,17 @@ class Authentication:
                 self.mycanvas.create_image(0,0,image=self.imalogin,anchor="nw")
             else:
                 self.mycanvas.create_image(0,0,image=self.imasignup,anchor="nw")
+            if self.usernameentry:
+                self.usernameentry.destroy()
+            if self.passwordentry:
+                self.passwordentry.destroy()
+            self.usernameentry = ""
+            self.passwordentry = ""
             self.bout = self.mycanvas.create_rectangle((597/1600)*self.x,(555/900)*self.y, (986/1600)*self.x,(614/900)*self.y,outline="#5442f5",fill=None,width=0,tags=("self.bout"))
 
         else:
+            if self.buttonbusy:
+                return
             x = self.mycanvas.canvasx(event.x)
             x = x*(1600/self.x)
             y = self.mycanvas.canvasy(event.y)
@@ -145,8 +154,6 @@ class Authentication:
                         self.show_error("Incorrect username or password",user=True,pass1=True)
 
                 self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
-                
-                
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
                     self.usernameentry.destroy()
@@ -159,7 +166,6 @@ class Authentication:
         self.current = str(h[0].widget)
     
     def shift(self):
-        self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2)
         stop_thread = False
         
         mygui = gui_main.Gui(self.mydata,gui_core,self.window,self.mycanvas)
@@ -193,7 +199,8 @@ class Authentication:
             self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
         
         scrlthread = threading.Thread(target=self.deleteerrormsgs,daemon=True)
-        self.window.after(2000, scrlthread.start)
+        self.buttonbusy = True
+        self.window.after(1200, scrlthread.start)
 
     def deleteerrormsgs(self):
         for i in range(1,256):
@@ -202,10 +209,11 @@ class Authentication:
                 self.mycanvas.itemconfig(self.passout,outline=color)
             if self.userout:
                 self.mycanvas.itemconfig(self.userout,outline=color)
-            self.mycanvas.itemconfig(self.bout,outline=color)
+        self.mycanvas.itemconfig(self.bout,outline="#5442f5")
 
         self.errorinfo.destroy()
         if self.userout:
             self.mycanvas.delete(self.userout)
         if self.passout:
             self.mycanvas.delete(self.passout)
+        self.buttonbusy = False
