@@ -1,6 +1,8 @@
 from tkinter import *
 import tkinter.font as tkfont
 from PIL import ImageTk,Image
+from core import data
+from gui import gui_main,gui_core
 
 class Authentication:
     def __init__(self):
@@ -27,7 +29,7 @@ class Authentication:
         self.y = y
 
         
-        self.imalogin = ImageTk.PhotoImage(Image.open(r"images/login.png").resize((x,y)))
+        self.imalogin = ImageTk.PhotoImage(Image.open(r"images/LOGIN.png").resize((x,y)))
         self.imasignup = ImageTk.PhotoImage(Image.open(r"images/sign up.png").resize((x,y)))
 
         self.mycanvas=Canvas(self.window,width=x,height=y,relief="flat",highlightthickness=0)
@@ -36,14 +38,15 @@ class Authentication:
         self.switch_label = Label(self.window, text="dont have an account?",font=("Arial Italic Bold",10),fg="#342c5a",bg="#FFFFFF")
         self.mycanvas.create_window(x/1.943, y/1.87, anchor = "nw",window=self.switch_label,tags=("todel"))
         self.bout = self.mycanvas.create_rectangle(
-            (597/1600)*self.x,(555/900)*self.y, (984/1600)*self.x,(614/900)*self.y,
-            outline="blue",
+            (597/1600)*self.x,(555/900)*self.y, (986/1600)*self.x,(614/900)*self.y,
+            outline="#5442f5",
             fill=None,
             width=0,
             tags=("self.bout")
         )
-        self.mycanvas.tag_bind(self.bout, "<Enter>", self.OnHover)
-        self.mycanvas.tag_bind(self.bout, "<Leave>", self.UnHover)
+
+
+        self.mycanvas.bind('<Motion>', self.motion)
             #x.bind('<Enter>', lambda x: self.OnHover(x))tagOrId
             #x.bind('<Leave>', lambda x: self.UnHover(x))
         #self.mycanvas.tag_bind("outline", '<Enter>', lambda event: self.OnHover(event.widget))
@@ -51,17 +54,20 @@ class Authentication:
         self.mycanvas.pack()
         self.window.mainloop()
 
-    def OnHover(self,x):
-        self.mycanvas.itemconfig(self.bout, outline="blue",state="normal")
-    
-    def UnHover(self,x):
-        self.mycanvas.itemconfig(self.bout, state="hidden")
-
     def togglewindowstate(self):
         if self.window.attributes('-fullscreen'):
             self.window.attributes('-fullscreen', False)
         else:
             self.window.attributes('-fullscreen', True)
+
+    def motion(self,event):
+        x, y = event.x, event.y
+        x = x*(1600/self.x)
+        y = y*(900/self.y)
+        if x>=597 and x<=984 and y>=555 and y<=614:
+            self.mycanvas.itemconfig(self.bout, width=2)
+        else:
+            self.mycanvas.itemconfig(self.bout,width=0)     
 
     def callback(self,event):
         if "label" in self.current:
@@ -71,7 +77,7 @@ class Authentication:
                 xn = self.x/1.943
             else:
                 text1 = "already have an account?"
-                xn = self.x/1.99
+                xn = self.x/1.999
 
             self.mycanvas.delete("todel")
             del self.switch_label
@@ -82,6 +88,8 @@ class Authentication:
                 self.mycanvas.create_image(0,0,image=self.imalogin,anchor="nw")
             else:
                 self.mycanvas.create_image(0,0,image=self.imasignup,anchor="nw")
+            self.bout = self.mycanvas.create_rectangle((597/1600)*self.x,(555/900)*self.y, (986/1600)*self.x,(614/900)*self.y,outline="#5442f5",fill=None,width=0,tags=("self.bout"))
+
         else:
             x = self.mycanvas.canvasx(event.x)
             x = x*(1600/self.x)
@@ -109,8 +117,11 @@ class Authentication:
                     self.usernameentry = None
 
             elif x>=597 and x<=984 and y>=555 and y<=614:
-                pass
-                #self.window.destroy()                    
+                self.mycanvas.itemconfig(self.bout,outline="white",width=4)
+                self.window.after(100,self.shift)
+                #self.mycanvas.itemconfig(self.bout,outline="#5442f5")  
+                #self.window.destroy()
+           
 
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
@@ -122,9 +133,16 @@ class Authentication:
 
     def on_enter(self,*h):
         self.current = str(h[0].widget)
-
+    
+    def shift(self):
+        self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2)
+        stop_thread = False
+        mydata = data.DataClient()
+        mygui = gui_main.Gui(mydata,gui_core,self.window,self.mycanvas)
+        mygui.load_images()
+        mygui.start()    
+        mygui.root.mainloop() 
+        
     def on_leave(self,*h):
         self.current = ""
 
-client = Authentication()
-client.doit()

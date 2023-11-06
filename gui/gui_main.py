@@ -7,12 +7,19 @@ from time import sleep
 
 
 class Gui:
-    def __init__(self,mydata,gui_core):
-        self.root = Tk()
+    def __init__(self,mydata,gui_core,window,canvas):
+        self.mycanvas = canvas
+        self.root = window
         self.root.title("Bookshop")
         self.root.geometry("1366x768")
         self.root.attributes('-fullscreen', True)
         self.mygui_core = gui_core.gui_core(self.root)
+
+        self.root.unbind("<F11>")
+        self.root.unbind("<Button-1>")
+        self.root.unbind_all('<Enter>')
+        self.root.unbind_all('<Leave>')
+
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
         self.root.bind('<Return>', self.deltextandsearch)
@@ -132,10 +139,13 @@ class Gui:
         t.start()
         
         #loading data
+        self.mycanvas.destroy()
         self.mainlogopic = Label(self.root,image=self.mainlogo,bg="#f5f5dc")
         self.mainlogopic.image = self.mainlogo
         self.mainlogopic.place(relx=.5, rely=.5,anchor= CENTER)
         self.mainlogopic.after(5000, self.load_screen)
+        
+        
      
     def load_screen(self):
         global stop_thread
