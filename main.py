@@ -6,6 +6,7 @@ from login import Authentication
 mydata = data.DataClient()
 client = Authentication(mydata)
 client.doit()
+#client.shift()
 
 #mygui = gui_main.Gui(mydata,gui_core)
 #mygui.load_images()

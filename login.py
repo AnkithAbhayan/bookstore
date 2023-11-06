@@ -56,7 +56,8 @@ class Authentication:
         #self.mycanvas.tag_bind("outline", '<Enter>', lambda event: self.OnHover(event.widget))
         #self.mycanvas.tag_bind("outline", '<Leave>', lambda event: self.UnHover(event.widget))        
         self.mycanvas.pack()
-        self.window.mainloop()
+        #self.window.mainloop()
+        self.shift()
 
     def togglewindowstate(self):
         if self.window.attributes('-fullscreen'):
@@ -130,6 +131,8 @@ class Authentication:
 
             elif x>=597 and x<=984 and y>=555 and y<=614:
                 self.mycanvas.itemconfig(self.bout,outline="white",width=4)
+                self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
+
                 mode = "login"
                 if self.switch_label['text'][0] == "a":
                     mode = "sign up"
@@ -149,11 +152,10 @@ class Authentication:
                 if mode == "login":
                     if self.mydata.userexists(uname,pass1):
                         self.show_error("Correct! Loading...",True)
-                        self.window.after(100,self.shift)
+                        
                     else:
                         self.show_error("Incorrect username or password",user=True,pass1=True)
 
-                self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
                     self.usernameentry.destroy()
@@ -193,14 +195,17 @@ class Authentication:
         msg = (" "*gap)+msg+(" "*gap)
         self.errorinfo = Label(self.window, width=35,font=("Consolas",12),highlightthickness=0,relief=FLAT,bg="white",fg=color,text=msg)
         self.mycanvas.create_window(0.375*self.x,0.7*self.y,anchor="nw",window=self.errorinfo)
-        if user:
-            self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
-        if pass1:
-            self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
-        
-        scrlthread = threading.Thread(target=self.deleteerrormsgs,daemon=True)
-        self.buttonbusy = True
-        self.window.after(1200, scrlthread.start)
+        if t==True:
+            self.window.after(100,self.shift)
+        else:
+            if user:
+                self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
+            if pass1:
+                self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
+            
+            scrlthread = threading.Thread(target=self.deleteerrormsgs,daemon=True)
+            self.buttonbusy = True
+            self.window.after(1200, scrlthread.start)
 
     def deleteerrormsgs(self):
         for i in range(1,256):
@@ -209,7 +214,6 @@ class Authentication:
                 self.mycanvas.itemconfig(self.passout,outline=color)
             if self.userout:
                 self.mycanvas.itemconfig(self.userout,outline=color)
-        self.mycanvas.itemconfig(self.bout,outline="#5442f5")
 
         self.errorinfo.destroy()
         if self.userout:

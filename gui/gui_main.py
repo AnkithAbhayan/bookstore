@@ -20,6 +20,8 @@ class Gui:
         self.root.unbind_all('<Enter>')
         self.root.unbind_all('<Leave>')
 
+        self.cart = []
+
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
         self.root.bind('<Return>', self.deltextandsearch)
@@ -46,15 +48,37 @@ class Gui:
     def callback2(self,event):
         x = self.canvas2.canvasx(event.x)
         y = self.canvas2.canvasy(event.y)
+
         if x>=10 and x<=60 and y>=10 and y<=60:
             self.canvas2.grid_forget()
             self.canvas1.grid(row=1,column=0,sticky="EW")
             self.vbar.config(command=self.canvas1.yview)
 
+        if x>=(1283/1600)*(self.scr_width-20) and x<=(1391/1600)*(self.scr_width-20) and y >= (718/900)*(self.scr_height-60) and y<= (790/900)*(self.scr_height-60):
+            book = self.data1["title"]
+            for item in self.cart:
+                if item["title"] == book:
+                    return
+            self.w["state"] = "disabled"
+            self.bout = self.canvas2.create_rectangle(
+                (1283/1600)*(self.scr_width-20),(718/900)*(self.scr_height-60), (1391/1600)*(self.scr_width-20),(790/900)*(self.scr_height-60),
+                outline="#5442f5",
+                fill="green",
+                width=0,
+                tags=("booked")
+            )
+            self.bout1 = self.canvas2.create_text((1337/1600)*(self.scr_width-20),(754/900)*(self.scr_height-60),text="✓",font=("consolas",45))
+            self.bout2 = Label(self.root,text="IN CART", font=("Consolas",17),fg="green")
+            self.canvas2.create_window((1280/1600)*(self.scr_width-20),(805/900)*(self.scr_height-60),anchor="nw",window=self.bout2)
+            self.cart.append({"title":self.data1["title"],"qty":self.w.get(),"price":self.data1["price"]})
+
+
     def showbookdetails(self,book):
+        self.data1 = self.mydata.fetch_bookdetails(book)
+
         self.canvas1.grid_forget()
 
-        self.canvas2 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height-60,relief='flat',highlightthickness=0,scrollregion=(0,0,700,self.scr_height*1.33))
+        self.canvas2 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height-60,relief='flat',highlightthickness=0,scrollregion=(0,0,700,(self.scr_height-60)*1.2))
 
         self.vbar.config(command=self.canvas2.yview)
         self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
@@ -62,11 +86,11 @@ class Gui:
         self.canvas2.grid(row=1,column=0,sticky="EW")
         self.canvas2.bind("<Button-1>", self.callback2)
 
-        points = [0,self.scr_height,self.scr_width,self.scr_height,self.scr_width,self.scr_height*1.34,0,self.scr_height*1.34]
+        points = [0,self.scr_height-60,self.scr_width,self.scr_height-60,self.scr_width,self.scr_height*1.2,0,self.scr_height*1.2]
         self.canvas2.create_polygon(points,fill="black",outline="grey")
         
-        #self.bufferimg = ImageTk.PhotoImage(Image.open(f"images/covers/{book}.jpg").resize((round(self.scr_width//4.5),round((16*self.scr_width//4.5)/9)))) 
-        self.bg_image2 = ImageTk.PhotoImage(Image.open("images/AMERICAN PSYCHO.jpeg").resize((self.scr_width-20,self.scr_height-60)))
+        self.data1["BookNo"] = 5
+        self.bg_image2 = ImageTk.PhotoImage(Image.open(f"images/book/{self.data1['BookNo']}.jpg").resize((self.scr_width-20,self.scr_height-60)))
         self.canvas2.create_image(0,0,image=self.bg_image2,anchor="nw")
         
 
@@ -78,22 +102,59 @@ class Gui:
             fill = "black",tags=("arrows")
         )
 
-        """data = self.mydata.fetch_bookdetails(book)
+        y = False
+        for item in self.cart:
+            if item["title"] == book:
+                k = item
+                print(k)
+                y = True
+                break
+            
+        self.w=""
+        self.w = Spinbox(
+            self.root, 
+            bg="white",
+            fg="black",
+            font=("Consolas",35),
+            width=1,
+            relief="flat",
+            from_=1,
+            to=9,
+            bd=0,
+            wrap=True,
+            buttondownrelief="flat",
+            buttonuprelief="flat",
+            state="readonly",
+        )
+        self.w['command'] = self.editprice
+        self.canvas2.create_window(self.scr_width*0.873, self.scr_height*0.735, anchor = "nw",window=self.w)
+        if y:
+            self.w.delete(0,"end")
+            self.w.insert(0,int(k["qty"]))
+            self.w["from_"] = int(k["qty"])
+            self.w["state"] = "disabled"
+            self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{int(self.data1['price'])*int(k['qty'])}",font=("Liberation Serif",50),tags=("price"))
+            self.bout = self.canvas2.create_rectangle(
+                (1283/1600)*(self.scr_width-20),(718/900)*(self.scr_height-60), (1391/1600)*(self.scr_width-20),(790/900)*(self.scr_height-60),
+                outline="#5442f5",
+                fill="green",
+                width=0,
+                tags=("booked")
+            )
+            self.bout1 = self.canvas2.create_text((1337/1600)*(self.scr_width-20),(754/900)*(self.scr_height-60),text="✓",font=("consolas",45))
+            self.bout2 = Label(self.root,text="IN CART", font=("Consolas",17),fg="green")
+            self.canvas2.create_window((1280/1600)*(self.scr_width-20),(805/900)*(self.scr_height-60),anchor="nw",window=self.bout2)
 
-        n=50
-        if len(book)>25:
-            n=30
-
-        self.titlelbl = Label(self.root,text=data["title"],font=("Liberation Serif",n))
-        self.authorlbl = Label(self.root,text=f'- {data["author"]}',font=("Liberation Serif",25))
-        self.pricelbl = Label(self.root,text=f"Rs.{data['price']}",font=("Liberation Serif",50))
-
-        xl = round(self.scr_width//4.5)
-        self.canvas2.create_window(xl+200, 100, anchor = "nw",window=self.titlelbl)
-        self.canvas2.create_window(xl+210, 200, anchor = "nw",window=self.authorlbl)
-        self.canvas2.create_window(xl+200, 400, anchor="nw",window=self.pricelbl)"""
+        else:
+            self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{self.data1['price']}",font=("Liberation Serif",50),tags=("price"))
+        self.canvas2.create_text(20,self.scr_height-40, anchor="nw", text="Made by Ankith Abhayan and Rajath Valsan.",fill="grey",font=("Courier New",15))
         self.menubar.lift()
         #
+
+    def editprice(self):
+        self.canvas2.delete("price")
+        price = int(self.w.get())*int(self.data1['price'])
+        self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{price}",font=("Liberation Serif",50),tags=("price"))
 
 
     def load_images(self):

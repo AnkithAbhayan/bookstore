@@ -43,14 +43,15 @@ class DataClient:
     def fetch_bookdetails(self,title):
         if self.sql:
             data = {}
-            self.mycursor.execute(f"select Author,Genre,Pub_dt,Price,description from books where Title='{title}'")
+            self.mycursor.execute(f"select BookNo, Author,Genre,Pub_dt,Price,description from books where Title='{title}'")
             for x in self.mycursor:
                 data["title"] = title
-                data["author"] = x[0]
-                data["genre"] = x[1]
-                data["pub_dt"] = x[2]
-                data["price"] = x[3]
-                data["description"] = x[4]
+                data["BookNo"] = x[0]
+                data["author"] = x[1]
+                data["genre"] = x[2]
+                data["pub_dt"] = x[3]
+                data["price"] = x[4]
+                data["description"] = x[5]
             return data
         else:
             data = {
@@ -94,9 +95,13 @@ class DataClient:
 
     def add_purchase(self,ID,Username,BookNo,Qty,DateTime):
         if self.sql:   
-            qry = f"insert into purchases values({ID},'{Username}',{BookNo},{Qty},'{DateTime}')"
+            qry = f"insert into purchases values('{Username}',{BookNo},{Qty},'{DateTime}')"
             self.mycursor.execute(qry)
             self.mycon.commit()
+
+    def addtocart(self,Username, BookNo, Qty):
+        if self.sql:
+            qry = f""
 
     def fetch_purchases(self):
         if self.sql:
