@@ -64,9 +64,13 @@ class Gui:
 
         points = [0,self.scr_height,self.scr_width,self.scr_height,self.scr_width,self.scr_height*1.34,0,self.scr_height*1.34]
         self.canvas2.create_polygon(points,fill="black",outline="grey")
-        self.bufferimg = ImageTk.PhotoImage(Image.open(f"images/covers/{book}.jpg").resize((round(self.scr_width//4.5),round((16*self.scr_width//4.5)/9)))) 
+        
+        #self.bufferimg = ImageTk.PhotoImage(Image.open(f"images/covers/{book}.jpg").resize((round(self.scr_width//4.5),round((16*self.scr_width//4.5)/9)))) 
+        self.bg_image2 = ImageTk.PhotoImage(Image.open("images/AMERICAN PSYCHO.jpeg").resize((self.scr_width-20,self.scr_height-60)))
         self.canvas2.create_image(0,0,image=self.bg_image2,anchor="nw")
-        self.canvas2.create_image( 125, 75, image = self.bufferimg,anchor = "nw")
+        
+
+        #self.canvas2.create_image( 125, 75, image = self.bufferimg,anchor = "nw")
 
         self.canvas2.create_oval(10,10,60,60, fill="white",outline="grey",activeoutline="cyan",width=3,tags=("arrows"))        
         self.canvas2.create_polygon(
@@ -74,7 +78,7 @@ class Gui:
             fill = "black",tags=("arrows")
         )
 
-        data = self.mydata.fetch_bookdetails(book)
+        """data = self.mydata.fetch_bookdetails(book)
 
         n=50
         if len(book)>25:
@@ -87,7 +91,7 @@ class Gui:
         xl = round(self.scr_width//4.5)
         self.canvas2.create_window(xl+200, 100, anchor = "nw",window=self.titlelbl)
         self.canvas2.create_window(xl+210, 200, anchor = "nw",window=self.authorlbl)
-        self.canvas2.create_window(xl+200, 400, anchor="nw",window=self.pricelbl)
+        self.canvas2.create_window(xl+200, 400, anchor="nw",window=self.pricelbl)"""
         self.menubar.lift()
         #
 
@@ -96,7 +100,6 @@ class Gui:
         self.search_logo = ImageTk.PhotoImage(Image.open('images/icons/mag.jpg').resize((30,30)))
         self.cart_logo = ImageTk.PhotoImage(Image.open('images/icons/cart.jpg').resize((30, 30)))
         self.bg_image=ImageTk.PhotoImage(Image.open('images/icons/background 3.jpg').resize((self.scr_width, 1250)))
-        self.bg_image2 = ImageTk.PhotoImage(Image.open("images/icons/background 4.jpg").resize((self.scr_width,self.scr_height)))
         self.booklogos = []
         self.bookbuttons = []
         self.bookprices = []
