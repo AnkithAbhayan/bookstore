@@ -93,22 +93,38 @@ class DataClient:
                 return True
         return False
 
-    def add_purchase(self,ID,Username,BookNo,Qty,DateTime):
+    def add_purchase(self,Username,BookNo,Qty,Price,DateTime):
         if self.sql:   
-            qry = f"insert into purchases values('{Username}',{BookNo},{Qty},'{DateTime}')"
+            qry = f"insert into purchases values('{Username}',{BookNo},{Qty},{Price}'{DateTime}')"
             self.mycursor.execute(qry)
             self.mycon.commit()
 
     def addtocart(self,Username, BookNo, Qty):
         if self.sql:
-            qry = f""
-
-    def fetch_purchases(self):
-        if self.sql:
-            qry = "select * from purchases"
+            qry = f"insert into cart values('{Username}',{BookNo},{Qty})"
             self.mycursor.execute(qry)
-            for x in self.mycursor:
-                print(x)       
+            self.mycon.commit()
 
+    def deletefromcart(self,Username,BookNo):
+        if self.sql:
+            qry = f"delete from cart where username='{Username}' and BookNo='{BookNo}'"
+            self.mycursor.execute(qry)
+            self.mycon.commit()
+
+    def fetch_cart(self,Username):
+        if self.sql:
+            qry = f"select * from cart where username='{Username}'"
+            self.mycursor.execute(qry)
+            vals = [x for x in self.mycursor]
+            return vals
+        return []
+
+    def fetch_purchases(self,Username):
+        if self.sql:
+            qry = f"select * from purchases where username='{Username}'"
+            self.mycursor.execute(qry)
+            vals = [x for x in self.mycursor]
+            return vals
+        return []
             
 data = DataClient()

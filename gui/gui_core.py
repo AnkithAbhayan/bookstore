@@ -30,6 +30,8 @@ class gui_core:
 
     def on_enter(self,*h):
         if ".!button" in str(h[0].widget):
+            if h[0].widget["text"] and h[0].widget["text"]!="KITAB":
+                return
             h[0].widget['bg'] = "#00FFFF" 
             h[0].widget['highlightbackground'] = "#00FFFF" 
            
@@ -38,6 +40,8 @@ class gui_core:
 
     def on_leave(self,*h):
         if ".!button" in str(h[0].widget):
+            if h[0].widget["text"] and h[0].widget["text"]!="KITAB":
+                return
             h[0].widget['bg'] = "#FFFFFF" 
             h[0].widget['highlightbackground'] = "#FFFFFF" 
         elif  '.!entry' in str(h[0].widget):

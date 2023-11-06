@@ -51,13 +51,9 @@ class Authentication:
 
 
         self.mycanvas.bind('<Motion>', self.motion)
-            #x.bind('<Enter>', lambda x: self.OnHover(x))tagOrId
-            #x.bind('<Leave>', lambda x: self.UnHover(x))
-        #self.mycanvas.tag_bind("outline", '<Enter>', lambda event: self.OnHover(event.widget))
-        #self.mycanvas.tag_bind("outline", '<Leave>', lambda event: self.UnHover(event.widget))        
         self.mycanvas.pack()
-        #self.window.mainloop()
-        self.shift()
+        self.window.mainloop()
+        #self.shift()
 
     def togglewindowstate(self):
         if self.window.attributes('-fullscreen'):
@@ -138,6 +134,8 @@ class Authentication:
                     mode = "sign up"
 
                 uname,pass1 = self.fetch_entry()
+                self.uname = uname
+                self.pass1 = pass1
                 if uname=="" and pass1=="":
                     self.show_error("Username and password fields empty",user=True,pass1=True)
                     return
@@ -170,6 +168,8 @@ class Authentication:
     def shift(self):
         stop_thread = False
         
+        self.mydata.uname = self.uname
+        self.mydata.pass1 = self.pass1
         mygui = gui_main.Gui(self.mydata,gui_core,self.window,self.mycanvas)
         mygui.load_images()
         mygui.start()    

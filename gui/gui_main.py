@@ -4,7 +4,8 @@ from difflib import SequenceMatcher
 from math import floor
 import threading
 from time import sleep
-
+import os
+import sys
 
 class Gui:
     def __init__(self,mydata,gui_core,window,canvas):
@@ -20,7 +21,7 @@ class Gui:
         self.root.unbind_all('<Enter>')
         self.root.unbind_all('<Leave>')
 
-        self.cart = []
+        self.cart = mydata.fetch_cart(mydata.uname)
 
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
@@ -71,7 +72,7 @@ class Gui:
             self.bout2 = Label(self.root,text="IN CART", font=("Consolas",17),fg="green")
             self.canvas2.create_window((1280/1600)*(self.scr_width-20),(805/900)*(self.scr_height-60),anchor="nw",window=self.bout2)
             self.cart.append({"title":self.data1["title"],"qty":self.w.get(),"price":self.data1["price"]})
-
+            self.mydata.addtocart(self.mydata.uname,self.data1["BookNo"],self.w.get())
 
     def showbookdetails(self,book):
         self.data1 = self.mydata.fetch_bookdetails(book)
@@ -161,6 +162,7 @@ class Gui:
         self.search_logo = ImageTk.PhotoImage(Image.open('images/icons/mag.jpg').resize((30,30)))
         self.cart_logo = ImageTk.PhotoImage(Image.open('images/icons/cart.jpg').resize((30, 30)))
         self.bg_image=ImageTk.PhotoImage(Image.open('images/icons/background 3.jpg').resize((self.scr_width, 1250)))
+        self.logoutpic = ImageTk.PhotoImage(Image.open('images/icons/logout.jpg'))
         self.booklogos = []
         self.bookbuttons = []
         self.bookprices = []
@@ -256,11 +258,16 @@ class Gui:
 
         self.cart_icon = Button(self.menubar, image=self.cart_logo,highlightthickness=2)
         self.cart_icon.image = self.cart_logo
+        self.logout_label = Label(self.menubar,text=self.mydata.uname,font=("consolas",17),bg="#0F1111",fg="white")
+        self.logout_button = Button(self.menubar, image=self.logoutpic,command=self.goback)
+        self.logout_button.image = self.logoutpic
 
         self.title.place(relx=0.07,rely=0.5,anchor=CENTER)
         self.searchbox.place(relx=0.40,rely=0.5,anchor=CENTER)
-        self.search_icon.place(relx=0.685,rely=0.5,anchor=CENTER)
-        self.cart_icon.place(relx=0.78,rely=0.5,anchor=CENTER)
+        self.search_icon.place(relx=0.68,rely=0.5,anchor=CENTER)
+        self.cart_icon.place(relx=0.73,rely=0.5,anchor=CENTER)
+        self.logout_label.place(relx=0.87,rely=0.5,anchor=CENTER)
+        self.logout_button.place(relx=0.97,rely=0.5,anchor=CENTER)
 
         # Create Canvas
         self.canvas1 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = 708,relief='flat',highlightthickness=0,scrollregion=(0,0,700,1450))
@@ -292,7 +299,11 @@ class Gui:
         self.display_books(f=True)
         self.menubar.lift()
         
-    
+
+    def goback(self):
+        self.root.destroy()
+        os.system("python main.py")
+
     def callback(self, event):
         lc = [self.scr_width-200,1150,self.scr_width-150,1200]
         rc = [self.scr_width-125,1150,self.scr_width-75,1200]
