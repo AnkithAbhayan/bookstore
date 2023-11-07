@@ -22,6 +22,7 @@ class Gui:
         self.root.unbind_all('<Leave>')
 
         self.cart = mydata.fetch_cart(mydata.uname)
+        print(self.cart)
 
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
@@ -58,7 +59,7 @@ class Gui:
         if x>=(1283/1600)*(self.scr_width-20) and x<=(1391/1600)*(self.scr_width-20) and y >= (718/900)*(self.scr_height-60) and y<= (790/900)*(self.scr_height-60):
             book = self.data1["title"]
             for item in self.cart:
-                if item["title"] == book:
+                if item[1] == int(self.data1["BookNo"]):
                     return
             self.w["state"] = "disabled"
             self.bout = self.canvas2.create_rectangle(
@@ -71,7 +72,7 @@ class Gui:
             self.bout1 = self.canvas2.create_text((1337/1600)*(self.scr_width-20),(754/900)*(self.scr_height-60),text="✓",font=("consolas",45))
             self.bout2 = Label(self.root,text="IN CART", font=("Consolas",17),fg="green")
             self.canvas2.create_window((1280/1600)*(self.scr_width-20),(805/900)*(self.scr_height-60),anchor="nw",window=self.bout2)
-            self.cart.append({"title":self.data1["title"],"qty":self.w.get(),"price":self.data1["price"]})
+            self.cart.append((self.mydata.uname,self.data1["BookNo"],self.w.get()))
             self.mydata.addtocart(self.mydata.uname,self.data1["BookNo"],self.w.get())
 
     def showbookdetails(self,book):
@@ -81,6 +82,7 @@ class Gui:
 
         self.canvas2 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height-60,relief='flat',highlightthickness=0,scrollregion=(0,0,700,(self.scr_height-60)*1.2))
 
+        self.vbar.grid(row=1, column=1,sticky="NSEW")
         self.vbar.config(command=self.canvas2.yview)
         self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
 
@@ -90,7 +92,6 @@ class Gui:
         points = [0,self.scr_height-60,self.scr_width,self.scr_height-60,self.scr_width,self.scr_height*1.2,0,self.scr_height*1.2]
         self.canvas2.create_polygon(points,fill="black",outline="grey")
         
-        self.data1["BookNo"] = 5
         self.bg_image2 = ImageTk.PhotoImage(Image.open(f"images/book/{self.data1['BookNo']}.jpg").resize((self.scr_width-20,self.scr_height-60)))
         self.canvas2.create_image(0,0,image=self.bg_image2,anchor="nw")
         
@@ -105,13 +106,13 @@ class Gui:
 
         y = False
         for item in self.cart:
-            if item["title"] == book:
+            if item[1] == int(self.data1["BookNo"]):
                 k = item
-                print(k)
                 y = True
                 break
             
         self.w=""
+        self.var = DoubleVar(value=1)
         self.w = Spinbox(
             self.root, 
             bg="white",
@@ -125,16 +126,19 @@ class Gui:
             wrap=True,
             buttondownrelief="flat",
             buttonuprelief="flat",
+            textvariable=self.var,
             state="readonly",
         )
         self.w['command'] = self.editprice
         self.canvas2.create_window(self.scr_width*0.873, self.scr_height*0.735, anchor = "nw",window=self.w)
         if y:
             self.w.delete(0,"end")
-            self.w.insert(0,int(k["qty"]))
-            self.w["from_"] = int(k["qty"])
+            self.w.insert(0,int(k[2]))
+            self.w["from_"] = int(k[2])
+            self.var.set(int(k[2]))
             self.w["state"] = "disabled"
-            self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{int(self.data1['price'])*int(k['qty'])}",font=("Liberation Serif",50),tags=("price"))
+            
+            self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{int(self.data1['price'])*int(k[2])}",font=("Liberation Serif",50),tags=("price"))
             self.bout = self.canvas2.create_rectangle(
                 (1283/1600)*(self.scr_width-20),(718/900)*(self.scr_height-60), (1391/1600)*(self.scr_width-20),(790/900)*(self.scr_height-60),
                 outline="#5442f5",
@@ -279,6 +283,7 @@ class Gui:
         
         self.vbar=Scrollbar(self.root,orient=VERTICAL)
         self.vbar.grid(row=1, column=1,sticky="NSEW")
+        
         self.vbar.config(command=self.canvas1.yview)
         
         
@@ -302,7 +307,7 @@ class Gui:
 
     def goback(self):
         self.root.destroy()
-        os.system("python main.py")
+        os.system("python3 main.py")
 
     def callback(self, event):
         lc = [self.scr_width-200,1150,self.scr_width-150,1200]
@@ -428,7 +433,7 @@ class Gui:
             self.vbar.grid(row=1, column=1,sticky="NSEW")
             return    
             
-        titles = self.mydata.fetch_titles()
+        titles = self.mydata.fetch_titles()[0]
         ratios = {}
         for i in range(len(titles)):
             ratios.update({SequenceMatcher(None, inpt, titles[i].lower()).ratio():titles[i]})

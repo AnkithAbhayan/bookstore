@@ -149,11 +149,22 @@ class Authentication:
 
                 if mode == "login":
                     if self.mydata.userexists(uname,pass1):
-                        self.show_error("Correct! Loading...",True)
+                        self.show_error("Correct! Loading...",True,True,True)
                         
                     else:
                         self.show_error("Incorrect username or password",user=True,pass1=True)
-
+                else:
+                    uname = uname.strip()
+                    if len(uname) < 4:
+                        self.show_error("len(username) has to be > 3",user=True)
+                    elif self.mydata.userexists(uname):
+                        self.show_error("Username already taken",user=True)
+                    elif len(pass1) < 9:
+                        self.show_error("len(password) must be > 8",pass1=True)
+                    else:
+                        self.mydata.create_account(uname,pass1)
+                        self.show_error("Creating Account!",True,True,True)
+                    
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
                     self.usernameentry.destroy()
@@ -195,20 +206,22 @@ class Authentication:
         msg = (" "*gap)+msg+(" "*gap)
         self.errorinfo = Label(self.window, width=35,font=("Consolas",12),highlightthickness=0,relief=FLAT,bg="white",fg=color,text=msg)
         self.mycanvas.create_window(0.375*self.x,0.7*self.y,anchor="nw",window=self.errorinfo)
+
+        if user:
+            self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline=color,fill=None,width=2,tags=("self.bout"))
+        if pass1:
+            self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline=color,fill=None,width=2,tags=("self.bout"))
+        
         if t==True:
             self.window.after(100,self.shift)
         else:
-            if user:
-                self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
-            if pass1:
-                self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline="red",fill=None,width=2,tags=("self.bout"))
-            
             scrlthread = threading.Thread(target=self.deleteerrormsgs,daemon=True)
             self.buttonbusy = True
             self.window.after(1200, scrlthread.start)
 
     def deleteerrormsgs(self):
-        for i in range(1,256):
+        for i in range(1,2048):
+            i = i//8
             color = '#{:02x}{:02x}{:02x}'.format(255, i, i)
             if self.passout:
                 self.mycanvas.itemconfig(self.passout,outline=color)
