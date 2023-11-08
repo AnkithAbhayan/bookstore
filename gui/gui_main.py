@@ -47,6 +47,15 @@ class Gui:
         self.bookx = round(self.scr_width*0.15)
         self.booky = round((16*self.bookx)/9)
 
+    def callback3(self,event):
+        x = self.canvas3.canvasx(event.x)
+        y = self.canvas3.canvasy(event.y)
+
+        if x>=10 and x<=60 and y>=10 and y<=60:
+            self.canvas3.grid_forget()
+            self.canvas1.grid(row=1,column=0,sticky="EW")
+            self.vbar.config(command=self.canvas1.yview)
+
     def callback2(self,event):
         x = self.canvas2.canvasx(event.x)
         y = self.canvas2.canvasy(event.y)
@@ -74,6 +83,113 @@ class Gui:
             self.canvas2.create_window((1280/1600)*(self.scr_width-20),(805/900)*(self.scr_height-60),anchor="nw",window=self.bout2)
             self.cart.append((self.mydata.uname,self.data1["BookNo"],self.w.get()))
             self.mydata.addtocart(self.mydata.uname,self.data1["BookNo"],self.w.get())
+
+    def showcart(self):
+        self.canvas1.grid_forget()
+
+        h=self.scr_height-60
+        if (a:=(220+(100*len(self.cart))+300))>h:
+            h = a
+
+        print(h)
+
+        self.canvas3 = Canvas(self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height-60,relief='flat',highlightthickness=0,scrollregion=(0,0,700,h+300))
+        
+        self.vbar.grid(row=1, column=1,sticky="NSEW")
+        self.vbar.config(command=self.canvas3.yview)
+        self.canvas3.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
+
+        self.canvas3.grid(row=1,column=0,sticky="EW")
+        self.canvas3.bind("<Button-1>", self.callback3)
+
+        points = [0,h,self.scr_width,h,self.scr_width,h+320,0,h+320]
+        self.canvas3.create_polygon(points,fill="black",outline="grey")
+        
+        self.bg_image3 = ImageTk.PhotoImage(Image.open(f"images/icons/background 4.jpg").resize((self.scr_width-20,h)))
+        self.canvas3.create_image(0,0,image=self.bg_image3,anchor="nw")      
+
+        self.canvas3.create_oval(10,10,60,60, fill="white",outline="grey",activeoutline="cyan",width=3,tags=("arrows"))        
+        self.canvas3.create_polygon(
+            self.mygui_core.generate_coordinates(15, 15,40,40,"left","arrow"),
+            fill = "black",tags=("arrows")
+        )
+
+        self.greettext = self.canvas3.create_text(self.scr_width//2,40,text="Welcome! "+self.mydata.uname,font=("Liberation Serif",30))
+        self.canvas3.create_line(0,75,self.scr_width,75,width=2,fill="black")
+
+        self.cartlabel = Label(self.root,image=self.cart_logo2)
+        self.canvas3.create_window(50,120,window=self.cartlabel)
+
+        self.modeshiftbtn = Button(self.root,text="View Purchases",font=("Liberation Serif",15))
+        self.canvas3.create_window(self.scr_width*0.90, 40, window=self.modeshiftbtn)
+
+        #self.modelabel = Label(self.root, text="Your Cart:",font=("Liberation Serif",25))
+        self.canvas3.create_text(self.scr_width//8, 120, text="Your Cart:",font=("Liberation Serif",25))
+
+
+        self.setcart()
+
+
+    def setcart(self):
+        self.frames = []
+        self.qtys = []
+        self.cartprices = []
+        self.delbuttons = []
+        for i in range(len(self.cart)):
+            entry = self.cart[i]
+            data = self.mydata.fetch_bookdetailsid(entry[1])
+            if not data:
+                data = {"title":self.titles[entry[1]-1],"author":"Ankith Abhayan","price":self.prices[entry[1]-1]}
+
+            menubar = Frame(self.root,height=80,width=self.scr_width*0.7,bg="white",relief='flat')
+            menubar["highlightthickness"]=2
+            menubar["highlightbackground"]="black"
+            menubar.grid_propagate(False)
+            title = Label(
+                menubar,text=f'{data["title"]} - {data["author"]}',font=("Liberation Serif",20),
+                image=self.pixel,
+                compound="center", 
+                width=(self.scr_width*0.7)*0.65
+            )
+            self.var = DoubleVar(value=entry[2])
+            w = Spinbox(menubar, bg="white",fg="black",font=("Consolas",30),width=1,relief="flat",from_=1,bd=3,to=9,wrap=True,buttondownrelief="flat",buttonuprelief="flat",textvariable=self.var,state="readonly")        
+            w["command"] = lambda i=i,data=data:self.editprice2(i,data['price'])
+            price = Label(menubar, font=("Liberation Serif",25),text=f"Rs.{int(entry[2])*int(data['price'])}")
+            btn = Button(self.root,image=self.closebtn,command=lambda i=i:self.removecart(i),background="black",relief="flat")
+            self.delbuttons.append(btn)
+
+            title.grid(row=0,column=0,pady=20)
+            w.grid(row=0,column=1,pady=10,padx=40)
+            price.grid(row=0,column=2,pady=10,padx=40)
+
+            self.frames.append(menubar)
+            self.qtys.append(w)
+            self.cartprices.append(price)
+
+        y=220
+        for i in range(len(self.frames)):
+            self.canvas3.create_window(self.scr_width//2.25,y,window=self.frames[i],tags=("cart"))
+            self.canvas3.create_window(self.scr_width*0.824,y,window=self.delbuttons[i],tags=("cart"))
+            y+=100
+
+        if len(self.cart)!=0:
+            self.confirmbtn = Button(self.root,text="Confirm purchase",bg="#56f545",font=("Liberation Serif",20),relief="flat")
+            self.canvas3.create_window(self.scr_width//6,y+50,window=self.confirmbtn,tags=("cart"))
+
+            sum1 = 0
+            for lab in self.cartprices:
+                sum1+=int(lab["text"][3:])
+
+            self.totalcost = Label(self.root,text=f"Total: {sum1}Rs.",font=("Liberation Serif",35),borderwidth=1,relief="solid")
+            self.canvas3.create_window(self.scr_width*0.7,y+50,window=self.totalcost,tags=("cart"))
+
+        self.menubar.lift()
+
+    def removecart(self,i):
+        del self.cart[i]
+        self.canvas3.delete("cart")
+        self.setcart()
+        pass
 
     def showbookdetails(self,book):
         self.data1 = self.mydata.fetch_bookdetails(book)
@@ -156,15 +272,26 @@ class Gui:
         self.menubar.lift()
         #
 
+    def editprice2(self,i,price):
+        self.cartprices[i]["text"] = f"Rs.{int(price)*int(self.qtys[i].get())}"
+        sum1 = 0
+        for lab in self.cartprices:
+            sum1+=int(lab["text"][3:])
+
+        self.totalcost["text"]=f"Total: {sum1}Rs."
+        self.cart[i] = (self.cart[i][0],self.cart[i][1],int(self.qtys[i].get()))
+
     def editprice(self):
         self.canvas2.delete("price")
         price = int(self.w.get())*int(self.data1['price'])
         self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{price}",font=("Liberation Serif",50),tags=("price"))
 
-
     def load_images(self):
         self.search_logo = ImageTk.PhotoImage(Image.open('images/icons/mag.jpg').resize((30,30)))
         self.cart_logo = ImageTk.PhotoImage(Image.open('images/icons/cart.jpg').resize((30, 30)))
+        self.cart_logo2 = ImageTk.PhotoImage(Image.open('images/icons/cart.jpg').resize((50, 50)))
+
+        self.closebtn = ImageTk.PhotoImage(Image.open('images/icons/closebtn.png'))
         self.bg_image=ImageTk.PhotoImage(Image.open('images/icons/background 3.jpg').resize((self.scr_width, 1250)))
         self.logoutpic = ImageTk.PhotoImage(Image.open('images/icons/logout.jpg'))
         self.booklogos = []
@@ -260,7 +387,7 @@ class Gui:
         self.search_icon = Button(self.menubar, image=self.search_logo, highlightthickness=2,command = self.search)
         self.search_icon.image = self.search_logo
 
-        self.cart_icon = Button(self.menubar, image=self.cart_logo,highlightthickness=2)
+        self.cart_icon = Button(self.menubar, image=self.cart_logo,highlightthickness=2, command=self.showcart)
         self.cart_icon.image = self.cart_logo
         self.logout_label = Label(self.menubar,text=self.mydata.uname,font=("consolas",17),bg="#0F1111",fg="white")
         self.logout_button = Button(self.menubar, image=self.logoutpic,command=self.goback)

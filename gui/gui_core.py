@@ -42,6 +42,9 @@ class gui_core:
         if ".!button" in str(h[0].widget):
             if h[0].widget["text"] and h[0].widget["text"]!="KITAB":
                 return
+            if h[0].widget["relief"]=="flat":
+                h[0].widget["bg"] = "#000000"
+                return
             h[0].widget['bg'] = "#FFFFFF" 
             h[0].widget['highlightbackground'] = "#FFFFFF" 
         elif  '.!entry' in str(h[0].widget):

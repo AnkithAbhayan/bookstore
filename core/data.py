@@ -40,6 +40,17 @@ class DataClient:
         else:
             return [random.randint(100, 1000) for item in titles]
 
+    def fetch_bookdetailsid(self,id):
+        if self.sql:
+            data = {}
+            self.mycursor.execute(f"select Title,Author,Price from books where No={id}")
+            for x in self.mycursor:
+                data["title"] = x[0]
+                data["author"] = x[1]
+                data["price"] = x[2]
+            return data
+        return None
+                             
     def fetch_bookdetails(self,title):
         if self.sql:
             data = {}
@@ -81,7 +92,7 @@ class DataClient:
             self.mycursor.execute(qry)
             vals = [item for item in self.mycursor]
         else:
-            vals = [("Ankith Abhayan","wakapie1234#"),("Karun","helloworld##")]
+            vals = [("Ankith Abhayan","wakapie1234#"),("1","1")]
         if not password:
             for item in vals:
                 if item[0] == username:
