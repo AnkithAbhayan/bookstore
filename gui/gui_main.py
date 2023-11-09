@@ -22,7 +22,7 @@ class Gui:
         self.root.unbind_all('<Leave>')
 
         self.cart = mydata.fetch_cart(mydata.uname)
-        print(self.cart)
+        self.canvas2 = ""
 
         self.root.bind("<F11>", lambda event: self.mygui_core.togglewindowstate())
 
@@ -53,8 +53,11 @@ class Gui:
 
         if x>=10 and x<=60 and y>=10 and y<=60:
             self.canvas3.grid_forget()
+            if self.canvas2:
+                self.canvas2.grid_forget()
             self.canvas1.grid(row=1,column=0,sticky="EW")
             self.vbar.config(command=self.canvas1.yview)
+            self.mydata.savecart(self.cart)
 
     def callback2(self,event):
         x = self.canvas2.canvasx(event.x)
@@ -135,6 +138,29 @@ class Gui:
         self.qtys = []
         self.cartprices = []
         self.delbuttons = []
+
+        columnhead = Frame(self.root,height=50,width=self.scr_width*0.7,bg="white",relief='flat',highlightthickness=2,highlightbackground="black")
+        columnhead.grid_propagate(False)
+
+        title = Label(
+            columnhead,text='Book Title - Author',font=("Liberation Serif",20),
+            image=self.pixel,
+            compound="center", 
+            width=(self.scr_width*0.7)*0.65
+        )
+
+        qtylabel = Label(
+            columnhead,text="Quantity",font=("Liberation Serif",20)
+        )
+
+        pricelabel = Label(
+            columnhead,text="Price",font=("Liberation Serif", 20)
+        )
+
+        title.grid(row=0,column=0,pady=(0,25))
+        qtylabel.grid(row=0,column=1,pady=(0,25),padx=(20,25))
+        pricelabel.grid(row=0,column=2,pady=(0,25),padx=(45,20))
+        
         for i in range(len(self.cart)):
             entry = self.cart[i]
             data = self.mydata.fetch_bookdetailsid(entry[1])
@@ -167,13 +193,16 @@ class Gui:
             self.cartprices.append(price)
 
         y=220
+        self.canvas3.create_window(self.scr_width//2.25,y,window=columnhead,tags=("cart"))
+        y=300
+
         for i in range(len(self.frames)):
             self.canvas3.create_window(self.scr_width//2.25,y,window=self.frames[i],tags=("cart"))
             self.canvas3.create_window(self.scr_width*0.824,y,window=self.delbuttons[i],tags=("cart"))
             y+=100
 
         if len(self.cart)!=0:
-            self.confirmbtn = Button(self.root,text="Confirm purchase",bg="#56f545",font=("Liberation Serif",20),relief="flat")
+            self.confirmbtn = Button(self.root,text="Confirm purchase",bg="#56f545",font=("Liberation Serif",20),relief="flat",command=self.purchase)
             self.canvas3.create_window(self.scr_width//6,y+50,window=self.confirmbtn,tags=("cart"))
 
             sum1 = 0
@@ -560,7 +589,7 @@ class Gui:
             self.vbar.grid(row=1, column=1,sticky="NSEW")
             return    
             
-        titles = self.mydata.fetch_titles()[0]
+        titles = self.mydata.fetch_titles()
         ratios = {}
         for i in range(len(titles)):
             ratios.update({SequenceMatcher(None, inpt, titles[i].lower()).ratio():titles[i]})

@@ -117,6 +117,17 @@ class DataClient:
             self.mycursor.execute(qry)
             self.mycon.commit()
 
+    def savecart(self,cart):
+        if self.sql:
+            qry = f"delete from cart where username={cart[0]}"
+            self.mycursor.execute(qry)
+            if len(cart)==0:
+                return
+            for item in cart:
+                self.mycursor.execute(f"insert into cart values('{item[0]}',{item[1]},{item[2]})")
+
+            self.mycon.commit() 
+
     def deletefromcart(self,Username,BookNo):
         if self.sql:
             qry = f"delete from cart where username='{Username}' and BookNo='{BookNo}'"
