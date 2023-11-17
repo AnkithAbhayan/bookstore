@@ -59,6 +59,13 @@ class Gui:
             self.vbar.config(command=self.canvas1.yview)
             self.mydata.savecart(self.cart)
 
+        y1=300
+        for i in range(len(self.cart)):
+            if x>=self.scr_width*0.824-20 and x<= self.scr_width*0.824+20 and y1>y-20 and y1<=y+20:
+                self.removecart(i)
+                break
+            y1+=100
+
     def callback2(self,event):
         x = self.canvas2.canvasx(event.x)
         y = self.canvas2.canvasy(event.y)
@@ -137,7 +144,6 @@ class Gui:
         self.frames = []
         self.qtys = []
         self.cartprices = []
-        self.delbuttons = []
 
         columnhead = Frame(self.root,height=50,width=self.scr_width*0.7,bg="white",relief='flat',highlightthickness=2,highlightbackground="black")
         columnhead.grid_propagate(False)
@@ -181,8 +187,8 @@ class Gui:
             w = Spinbox(menubar, bg="white",fg="black",font=("Consolas",30),width=1,relief="flat",from_=1,bd=3,to=9,wrap=True,buttondownrelief="flat",buttonuprelief="flat",textvariable=self.var,state="readonly")        
             w["command"] = lambda i=i,data=data:self.editprice2(i,data['price'])
             price = Label(menubar, font=("Liberation Serif",25),text=f"Rs.{int(entry[2])*int(data['price'])}")
-            btn = Button(self.root,image=self.closebtn,command=lambda i=i:self.removecart(i),background="black",relief="flat")
-            self.delbuttons.append(btn)
+            #btn = Button(self.root,image=self.closebtn,command=lambda i=i:self.removecart(i),background="black",relief="flat")
+            #self.delbuttons.append(btn)
 
             title.grid(row=0,column=0,pady=20)
             w.grid(row=0,column=1,pady=10,padx=40)
@@ -198,7 +204,13 @@ class Gui:
 
         for i in range(len(self.frames)):
             self.canvas3.create_window(self.scr_width//2.25,y,window=self.frames[i],tags=("cart"))
-            self.canvas3.create_window(self.scr_width*0.824,y,window=self.delbuttons[i],tags=("cart"))
+            #self.canvas3.create_window(self.scr_width*0.824,y,window=self.delbuttons[i],tags=("cart"))
+            self.canvas3.create_oval(self.scr_width*0.824-20,y-20,self.scr_width*0.824+20,y+20, fill="white",outline="black",tags="cart")
+            self.canvas3.create_polygon(
+                self.mygui_core.generate_coordinates(self.scr_width*0.824-17,y-18,35,35,"right","x"),
+                fill="red",tags="cart"
+            )
+            #close buttons here
             y+=100
 
         if len(self.cart)!=0:
@@ -213,6 +225,9 @@ class Gui:
             self.canvas3.create_window(self.scr_width*0.7,y+50,window=self.totalcost,tags=("cart"))
 
         self.menubar.lift()
+
+    def purchase(self):
+        pass
 
     def removecart(self,i):
         del self.cart[i]
@@ -297,9 +312,9 @@ class Gui:
 
         else:
             self.pricelbl = self.canvas2.create_text(self.scr_width*0.38, self.scr_height*0.72, anchor="nw",text=f"Rs.{self.data1['price']}",font=("Liberation Serif",50),tags=("price"))
+
         self.canvas2.create_text(20,self.scr_height-40, anchor="nw", text="Made by Ankith Abhayan and Rajath Valsan.",fill="grey",font=("Courier New",15))
         self.menubar.lift()
-        #
 
     def editprice2(self,i,price):
         self.cartprices[i]["text"] = f"Rs.{int(price)*int(self.qtys[i].get())}"
