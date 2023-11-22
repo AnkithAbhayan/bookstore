@@ -1,8 +1,10 @@
 from tkinter import *
 from tkinter.ttk import Combobox
+from tkinter.messagebox import showinfo
 from PIL import ImageTk, Image
 from difflib import SequenceMatcher
 from math import floor
+from datetime import datetime
 import threading
 from time import sleep
 import os
@@ -53,11 +55,20 @@ class Gui:
             self.vbar.config(command=self.canvas1.yview)
             self.mydata.savecart(self.cart)
         y1=300
-        for i in range(len(self.cart)):
-            if x>=self.scr_width*0.824-20 and x<= self.scr_width*0.824+20 and y1>y-20 and y1<=y+20:
-                self.removecart(i)
-                break
-            y1+=100
+        if not self.cartbtnstate:
+            #self.scr_width*0.48,self.h+10,self.scr_width*0.48+40,self.h+50
+            if x>=self.scr_width*0.48 and x<=self.scr_width*0.48+40 and y>= self.h+10 and y<=self.h+50:
+                self.canvas3.delete("payment")
+                self.canvas3.delete("cart")
+                self.setcart()
+                self.canvas3.yview_moveto(0)
+            return
+        else:
+            for i in range(len(self.cart)):
+                if x>=self.scr_width*0.824-20 and x<= self.scr_width*0.824+20 and y1>y-20 and y1<=y+20:
+                    self.removecart(i)
+                    break
+                y1+=100
 
     def callback2(self,event):
         x = self.canvas2.canvasx(event.x)
@@ -121,6 +132,7 @@ class Gui:
 
 
     def setcart(self):
+        self.cartbtnstate=True
         self.frames = []
         self.qtys = []
         self.cartprices = []
@@ -178,10 +190,10 @@ class Gui:
 
         for i in range(len(self.frames)):
             self.canvas3.create_window(self.scr_width//2.25,y,window=self.frames[i],tags=("cart"))
-            self.canvas3.create_oval(self.scr_width*0.824-20,y-20,self.scr_width*0.824+20,y+20, fill="white",activefill="red",outline="black",tags="cart")
+            self.canvas3.create_oval(self.scr_width*0.824-20,y-20,self.scr_width*0.824+20,y+20, fill="white",activefill="red",outline="black",tags=("cart","rmvbtn"))
             self.canvas3.create_polygon(
                 self.mygui_core.generate_coordinates(self.scr_width*0.824-17,y-18,35,35,"right","x"),
-                fill="black",tags="cart"
+                fill="black",tags=("cart","rmvbtn")
             )
             y+=100
 
@@ -196,36 +208,73 @@ class Gui:
         self.menubar.lift()
 
     def OptionCallBack(self,*args):
-        text = self.pymtopts.get()
-        val = "phone no."
-        if text[0]=="Cr": #credit/debit card:
-            val = "CVV"
         self.canvas3.delete("payment")
-        self.canvas3.create_text(self.scr_width*0.07,self.h+70,text="full name",font=("Liberation Serif",20),fill="white",tags=("payment"))
-        self.canvas3.create_text(self.scr_width*0.07,self.h+110,text="phone no.",font=("Liberation Serif",20),fill="white",tags=("payment"))
+        self.canvas3.create_text(self.scr_width*0.13,self.h+30,text="Choose payment method:",font=("Liberation Serif",20),fill="white",tags=("payment"))
+
+        text = self.curpmptopt.get()
+        val = "phone no."
+        if text[0:2]=="Cr": #credit/debit card:
+            val = "CVV"
+
+        self.val = val
+        self.canvas3.create_text(self.scr_width*0.07,self.h+80,text="full name",font=("Liberation Serif",20),fill="white",tags=("payment"))
+        self.canvas3.create_text(self.scr_width*0.07,self.h+120,text=val,font=("Liberation Serif",20),fill="white",tags=("payment"))
                 
-        self.canvas3.create_text(self.scr_width*0.4,self.h+70,text="location",font=("Liberation Serif",20),fill="white",tags=("payment"))
-        self.canvas3.create_text(self.scr_width*0.4,self.h+110,text="pincode",font=("Liberation Serif",20),fill="white",tags=("payment"))
+        self.canvas3.create_text(self.scr_width*0.4,self.h+80,text="location",font=("Liberation Serif",20),fill="white",tags=("payment"))
+        self.canvas3.create_text(self.scr_width*0.4,self.h+120,text="pincode",font=("Liberation Serif",20),fill="white",tags=("payment"))
 
         self.entry1 = Entry(self.root,width=20,font=("Consolas",16),highlightthickness=1,highlightcolor=self.mygui_core.rgb_to_hex(0, 0, 255),highlightbackground=self.mygui_core.rgb_to_hex(100, 100, 100))
         self.entry2 = Entry(self.root,width=20,font=("Consolas",16),highlightthickness=1,highlightcolor=self.mygui_core.rgb_to_hex(0, 0, 255),highlightbackground=self.mygui_core.rgb_to_hex(100, 100, 100))
         self.entry3 = Entry(self.root,width=20,font=("Consolas",16),highlightthickness=1,highlightcolor=self.mygui_core.rgb_to_hex(0, 0, 255),highlightbackground=self.mygui_core.rgb_to_hex(100, 100, 100))
         self.entry4 = Entry(self.root,width=20,font=("Consolas",16),highlightthickness=1,highlightcolor=self.mygui_core.rgb_to_hex(0, 0, 255),highlightbackground=self.mygui_core.rgb_to_hex(100, 100, 100))
 
-        self.canvas3.create_window(self.scr_width*0.22,self.h+70,window=self.entry1,tags=("payment"))
-        self.canvas3.create_window(self.scr_width*0.22,self.h+110,window=self.entry2,tags=("payment"))
+        self.canvas3.create_window(self.scr_width*0.22,self.h+80,window=self.entry1,tags=("payment"))
+        self.canvas3.create_window(self.scr_width*0.22,self.h+120,window=self.entry2,tags=("payment"))
 
-        self.canvas3.create_window(self.scr_width*0.55,self.h+70,window=self.entry3,tags=("payment"))
-        self.canvas3.create_window(self.scr_width*0.55,self.h+110,window=self.entry4,tags=("payment"))
+        self.canvas3.create_window(self.scr_width*0.55,self.h+80,window=self.entry3,tags=("payment"))
+        self.canvas3.create_window(self.scr_width*0.55,self.h+120,window=self.entry4,tags=("payment"))
+
+        self.fnlconfirmbtn = Button(self.root,text="Confirm",bg="#56f545",font=("Liberation Serif",20),relief="flat",command=self.finalpurchase)
+        self.canvas3.create_window(self.scr_width*0.1,self.h+200,window=self.fnlconfirmbtn,tags=("payment"))
+
+    def finalpurchase(self):
+        if len(self.entry4.get())!=6:
+            return
+
+        l = len(self.entry2.get())
+        if self.val == "CVV":
+            if l!=3:
+                return
+        else:
+            if l!=10:
+                return
+        if len(self.entry1.get())<3:
+            return
+        if len(self.entry3.get())<10:
+            return
+
+        self.canvas3.delete("payment")
+        self.canvas3.delete("cart")
+        self.cart = []
+        self.setcart()
+        self.canvas3.yview_moveto(0)
+
+        day = int(datetime.now().strftime("%d"))+3
+        date = str(day)+datetime.now().strftime("-%m-%Y")
+        msg = f"Your purchase is successful!\nEstimated arrival date: {date}, by 10AM."
+        msgbox = showinfo(title="KITAB - purchase", message=msg)
 
 
 
 
     def purchase(self,y):
+        self.cartbtnstate = False
         self.canvas3.yview_moveto(1)
-        self.canvas3.create_text(self.scr_width*0.13,self.h+30,text="Choose payment method:",font=("Liberation Serif",20),fill="white")
+        self.canvas3.create_text(self.scr_width*0.13,self.h+30,text="Choose payment method:",font=("Liberation Serif",20),fill="white",tags=("payment"))
 
-        self.confirmbtn['state'] = 'disabled'
+        #self.confirmbtn['state'] = 'disabled'
+        self.confirmbtn.destroy()
+        self.canvas3.delete("rmvbtn")
 
         self.curpmptopt = StringVar(self.root)
         self.curpmptopt.set("-- Select Option --")
@@ -237,11 +286,18 @@ class Gui:
         )   
         #pymtopts.current(0)
         self.canvas3.create_window(self.scr_width*0.36,self.h+30,window=self.pymtopts,tags=("cart"))
+        self.canvas3.create_oval(self.scr_width*0.48,self.h+10,self.scr_width*0.48+40,self.h+50, fill="white",activefill="red",outline="black",tags=("cart","rmvbtn"))
+        self.canvas3.create_polygon(
+            self.mygui_core.generate_coordinates(self.scr_width*0.48+3,self.h+12,35,35,"right","x"),
+            fill="black",tags=("cart","rmvbtn")
+        )
 
 
     def removecart(self,i):
         del self.cart[i]
         self.canvas3.delete("cart")
+        self.canvas3.delete("payment")
+
         self.setcart()
         pass
 
