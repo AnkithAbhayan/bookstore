@@ -16,6 +16,7 @@ class Authentication:
         self.window.bind("<Button-1>", self.callback)
         self.window.bind_all('<Enter>',self.on_enter)
         self.window.bind_all('<Leave>',self.on_leave)
+        self.window.bind_all('<Return>',self.buttonpressed)
         self.usernameentry=None
         self.passwordentry=None
         self.current = ""
@@ -24,21 +25,15 @@ class Authentication:
         font = tkfont.Font(family="Consolas", size=15, weight="normal")
         self.m_len = font.measure("0")
 
-
-
     def doit(self):
         x=self.window.winfo_screenwidth()
         y=self.window.winfo_screenheight()
         self.x = x
         self.y = y
-
-        
         self.imalogin = ImageTk.PhotoImage(Image.open(r"images/LOGIN.png").resize((x,y)))
         self.imasignup = ImageTk.PhotoImage(Image.open(r"images/sign up.png").resize((x,y)))
-
         self.mycanvas=Canvas(self.window,width=x,height=y,relief="flat",highlightthickness=0)
         self.mycanvas.create_image(0,0,image=self.imalogin,anchor="nw")
-
         self.switch_label = Label(self.window, text="dont have an account?",font=("Arial Italic Bold",10),fg="#342c5a",bg="#FFFFFF")
         self.mycanvas.create_window(x/1.943, y/1.87, anchor = "nw",window=self.switch_label,tags=("todel"))
         self.bout = self.mycanvas.create_rectangle(
@@ -48,12 +43,9 @@ class Authentication:
             width=0,
             tags=("self.bout")
         )
-
-
         self.mycanvas.bind('<Motion>', self.motion)
         self.mycanvas.pack()
         self.window.mainloop()
-        #self.shift()
 
     def togglewindowstate(self):
         if self.window.attributes('-fullscreen'):
@@ -126,45 +118,7 @@ class Authentication:
                     self.usernameentry = None
 
             elif x>=597 and x<=984 and y>=555 and y<=614:
-                self.mycanvas.itemconfig(self.bout,outline="white",width=4)
-                self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
-
-                mode = "login"
-                if self.switch_label['text'][0] == "a":
-                    mode = "sign up"
-
-                uname,pass1 = self.fetch_entry()
-                self.uname = uname
-                self.pass1 = pass1
-                if uname=="" and pass1=="":
-                    self.show_error("Username and password fields empty",user=True,pass1=True)
-                    return
-
-                elif uname=="":
-                    self.show_error("Username field empty",user=True)
-                    return
-                elif pass1=="":
-                    self.show_error("Password field empty",pass1=True)
-                    return
-
-                if mode == "login":
-                    if self.mydata.userexists(uname,pass1):
-                        self.show_error("Correct! Loading...",True,True,True)
-                        
-                    else:
-                        self.show_error("Incorrect username or password",user=True,pass1=True)
-                else:
-                    uname = uname.strip()
-                    if len(uname) < 4:
-                        self.show_error("len(username) has to be > 3",user=True)
-                    elif self.mydata.userexists(uname):
-                        self.show_error("Username already taken",user=True)
-                    elif len(pass1) < 9:
-                        self.show_error("len(password) must be > 8",pass1=True)
-                    else:
-                        self.mydata.create_account(uname,pass1)
-                        self.show_error("Creating Account!",True,True,True)
-                    
+                self.buttonpressed("useless info")                    
             else:
                 if self.usernameentry and self.usernameentry.get()=="":                    
                     self.usernameentry.destroy()
@@ -173,12 +127,56 @@ class Authentication:
                     self.passwordentry.destroy()
                     self.passwordentry = None
 
+    def buttonpressed(self,event):
+        if self.buttonbusy:
+            return
+
+        self.mycanvas.itemconfig(self.bout,outline="white",width=4)
+        self.window.after(100, lambda:self.mycanvas.itemconfig(self.bout,outline="#5442f5",width=2))
+
+        mode = "login"
+        if self.switch_label['text'][0] == "a":
+            mode = "sign up"
+
+        uname,pass1 = self.fetch_entry()
+        self.uname = uname
+        self.pass1 = pass1
+        if uname=="" and pass1=="":
+            self.show_error("Username and password fields empty",user=True,pass1=True)
+            return
+        elif uname=="":
+            self.show_error("Username field empty",user=True)
+            self.usernameentry.focus()
+            return
+        elif pass1=="":
+            self.passwordentry.focus()
+            self.show_error("Password field empty",pass1=True)
+            return
+        if mode == "login":
+            if self.mydata.userexists(uname,pass1):
+                self.show_error("Correct! Loading...",True,True,True)
+            else:
+                self.show_error("Incorrect username or password",user=True,pass1=True)
+        else:
+            uname = uname.strip()
+            if len(uname) < 4:
+                self.usernameentry.focus()
+                self.show_error("len(username) has to be > 3",user=True)
+            elif self.mydata.userexists(uname):
+                self.usernameentry.focus()
+                self.show_error("Username already taken",user=True)
+            elif len(pass1) < 9:
+                self.passwordentry.focus()
+                self.show_error("len(password) must be > 8",pass1=True)
+            else:
+                self.mydata.create_account(uname,pass1)
+                self.show_error("Creating Account!",True,True,True)
+
     def on_enter(self,*h):
         self.current = str(h[0].widget)
     
     def shift(self):
         stop_thread = False
-        
         self.mydata.uname = self.uname
         self.mydata.pass1 = self.pass1
         mygui = gui_main.Gui(self.mydata,gui_core,self.window,self.mycanvas)
@@ -197,7 +195,6 @@ class Authentication:
             pass1 = self.passwordentry.get()
         return uname, pass1
 
-
     def show_error(self,msg,t=False,user=False,pass1=False):
         color = "red"
         if t==True:
@@ -206,12 +203,10 @@ class Authentication:
         msg = (" "*gap)+msg+(" "*gap)
         self.errorinfo = Label(self.window, width=35,font=("Consolas",12),highlightthickness=0,relief=FLAT,bg="white",fg=color,text=msg)
         self.mycanvas.create_window(0.375*self.x,0.7*self.y,anchor="nw",window=self.errorinfo)
-
         if user:
             self.userout = self.mycanvas.create_rectangle((597/1600)*self.x,(331/900)*self.y, (986/1600)*self.x,(392/900)*self.y,outline=color,fill=None,width=2,tags=("self.bout"))
         if pass1:
             self.passout = self.mycanvas.create_rectangle((597/1600)*self.x,(406/900)*self.y, (986/1600)*self.x,(471/900)*self.y,outline=color,fill=None,width=2,tags=("self.bout"))
-        
         if t==True:
             self.window.after(100,self.shift)
         else:
@@ -227,7 +222,6 @@ class Authentication:
                 self.mycanvas.itemconfig(self.passout,outline=color)
             if self.userout:
                 self.mycanvas.itemconfig(self.userout,outline=color)
-
         self.errorinfo.destroy()
         if self.userout:
             self.mycanvas.delete(self.userout)
