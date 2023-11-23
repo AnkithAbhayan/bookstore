@@ -54,21 +54,17 @@ class DataClient:
     def fetch_bookdetails(self,title):
         if self.sql:
             data = {}
-            self.mycursor.execute(f"select No, Author,Genre,Pub_dt,Price from books where Title='{title}'")
+            self.mycursor.execute(f"select No, Author, Price from books where Title='{title}'")
             for x in self.mycursor:
                 data["title"] = title
                 data["BookNo"] = x[0]
                 data["author"] = x[1]
-                data["genre"] = x[2]
-                data["pub_dt"] = x[3]
-                data["price"] = x[4]
+                data["price"] = x[2]
             return data
         else:
             data = {
                 "title":title,
                 "author":random.choice(["charles dickens","john steinback","william golding","George Orwell"]),
-                "genre":random.choice(["fiction","non-fiction","fantasy","romance"]),
-                "pub_dt":f"{random.randint(1900,2000)}-{random.randint(1,12)}-{random.randint(1,30)}",
                 "price":random.randint(100,1000),
                 "BookNo":random.randint(1,20)
             }
